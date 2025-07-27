@@ -1,0 +1,48 @@
+{
+  "name": "pangea-mcp",
+  "version": "1.0.0",
+  "description": "TypeScript MCP server for searching Brazilian jurisprudence using the Pangea legal database",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "types/index.ts",
+  "bin": {
+    "server": "src/server.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc --noEmit --pretty",
+    "typecheck:strict": "tsc --noEmit --strict --exactOptionalPropertyTypes --pretty",
+    "check": "biome check --write .",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
+  },
+  "keywords": [
+    "mcp",
+    "llm",
+    "legal",
+    "jurisprudence",
+    "brazil",
+    "pangea",
+    "typescript",
+    "bun"
+  ],
+  "author": {
+    "name": "Oscar Neto",
+    "email": "oscaromsn@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.1.2",
+    "@types/bun": "^1.2.19",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "private": true
+}
