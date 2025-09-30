@@ -119,8 +119,16 @@
         "useSortedClasses": {
           "level": "error",
           "options": {
-            "attributes": ["className", "class"],
-            "functions": ["clsx", "cva", "tw", "cn"]
+            "attributes": [
+              "className",
+              "class"
+            ],
+            "functions": [
+              "clsx",
+              "cva",
+              "tw",
+              "cn"
+            ]
           }
         }
       },
@@ -255,11 +263,20 @@
     }
   },
   "files": {
-    "includes": ["src/**/*", "tests/**/*", "*.ts", "*.js", "*.json"]
+    "includes": [
+      "src/**/*",
+      "tests/**/*",
+      "*.ts",
+      "*.js",
+      "*.json"
+    ]
   },
   "overrides": [
     {
-      "includes": ["tests/**/*", "**/*.test.ts"],
+      "includes": [
+        "tests/**/*",
+        "**/*.test.ts"
+      ],
       "linter": {
         "rules": {
           "complexity": {
