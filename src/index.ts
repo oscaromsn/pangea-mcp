@@ -7,7 +7,7 @@
  * of the Pangea jurisprudence search MCP server.
  */
 
-import { main } from "./server.ts";
+import { main } from "./server";
 
 // Handle uncaught errors
 process.on("uncaughtException", (error) => {
