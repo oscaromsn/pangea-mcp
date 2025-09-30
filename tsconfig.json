@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     // Environment setup & latest features
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -49,16 +51,34 @@
     "resolveJsonModule": true,
     "esModuleInterop": false,
     "isolatedModules": true,
-    "noErrorTruncation": false,
+    "noErrorTruncation": true,
     "checkJs": false,
     "forceConsistentCasingInFileNames": true,
     // Path mapping
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/types": ["types/index.ts"]
-    }
+      "@/*": [
+        "src/*"
+      ],
+      "@/types": [
+        "types/index.ts"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
   },
-  "include": ["src/**/*", "tests/**/*", "types/**/*"],
-  "exclude": ["node_modules", "dist", "build", "coverage"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage"
+  ]
 }
