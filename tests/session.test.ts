@@ -1,5 +1,5 @@
-import type { SearchResponse } from "@/types";
 import { expect, test } from "bun:test";
+import type { SearchResponse } from "@/types";
 import { SessionManager } from "../src/session";
 
 test("SessionManager - save and retrieve search", () => {
