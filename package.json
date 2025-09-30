@@ -33,13 +33,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "zod": "^4.0.10"
+    "@modelcontextprotocol/sdk": "^1.18.2",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.1.2",
-    "@types/bun": "^1.2.19",
-    "typescript": "^5.8.3"
+    "@biomejs/biome": "^2.2.4",
+    "@types/bun": "^1.2.23",
+    "typescript": "^5.9.2"
   },
   "engines": {
     "bun": ">=1.0.0"
