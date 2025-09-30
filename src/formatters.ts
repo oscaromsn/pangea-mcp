@@ -239,7 +239,7 @@ function isRecent(date?: string): boolean {
   const year = extractYear(date);
   if (!year) return false;
   const currentYear = new Date().getFullYear();
-  return currentYear - parseInt(year) <= 2;
+  return currentYear - parseInt(year, 10) <= 2;
 }
 
 /**
