@@ -1,6 +1,6 @@
-import { expect, spyOn, test } from "bun:test";
 import { PangeaAPIError, ValidationError } from "@/types";
-import { PangeaClient, searchJurisprudence } from "../src/client.ts";
+import { expect, spyOn, test } from "bun:test";
+import { PangeaClient, searchJurisprudence } from "../src/client";
 
 // Mock successful response
 const mockSuccessResponse = {

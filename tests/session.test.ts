@@ -1,6 +1,6 @@
-import { expect, test } from "bun:test";
 import type { SearchResponse } from "@/types";
-import { SessionManager } from "../src/session.ts";
+import { expect, test } from "bun:test";
+import { SessionManager } from "../src/session";
 
 test("SessionManager - save and retrieve search", () => {
   const sessionManager = new SessionManager();

@@ -65,25 +65,25 @@ describe("Interface Improvements", () => {
 
     // Check first precedent structure
     const firstPrecedent = precedents[0];
-    expect(firstPrecedent.citation).toBe("STF - RG 456 (2023)");
-    expect(firstPrecedent.court).toMatchObject({
+    expect(firstPrecedent!.citation).toBe("STF - RG 456 (2023)");
+    expect(firstPrecedent!.court).toMatchObject({
       code: "STF",
       name: "Supremo Tribunal Federal",
       hierarchy_level: "supreme",
     });
-    expect(firstPrecedent.precedent_type).toMatchObject({
+    expect(firstPrecedent!.precedent_type).toMatchObject({
       code: "RG",
       name: "Repercussão Geral",
       binding_force: "high",
     });
-    expect(firstPrecedent.status).toMatchObject({
+    expect(firstPrecedent!.status).toMatchObject({
       code: "Ativo",
       is_active: true,
       display: "Active",
     });
 
     // Check legal content structure
-    const legalContent = firstPrecedent.legal_content as Record<
+    const legalContent = firstPrecedent!.legal_content as Record<
       string,
       unknown
     >;
@@ -93,7 +93,7 @@ describe("Interface Improvements", () => {
     });
 
     // Check relevance hints
-    expect(firstPrecedent.relevance_hints).toMatchObject({
+    expect(firstPrecedent!.relevance_hints).toMatchObject({
       is_supreme_court: true,
       is_binding_precedent: true,
       is_recent: true,
@@ -141,10 +141,10 @@ describe("Interface Improvements", () => {
     const formatted = formatSearchResponse(mockResponse, {}, 1, 10);
     const precedents = formatted.precedents as Array<Record<string, unknown>>;
 
-    expect((precedents[0].court as any).hierarchy_level).toBe("supreme");
-    expect((precedents[1].court as any).hierarchy_level).toBe("federal");
-    expect((precedents[2].court as any).hierarchy_level).toBe("state");
-    expect((precedents[3].court as any).hierarchy_level).toBe("labor");
+    expect((precedents[0]!.court as any).hierarchy_level).toBe("supreme");
+    expect((precedents[1]!.court as any).hierarchy_level).toBe("federal");
+    expect((precedents[2]!.court as any).hierarchy_level).toBe("state");
+    expect((precedents[3]!.court as any).hierarchy_level).toBe("labor");
   });
 
   test("Binding force classification works correctly", () => {
@@ -173,7 +173,7 @@ describe("Interface Improvements", () => {
 
       const formatted = formatSearchResponse(mockResponse, {}, 1, 10);
       const precedents = formatted.precedents as Array<Record<string, unknown>>;
-      expect((precedents[0].precedent_type as any).binding_force).toBe(
+      expect((precedents[0]!.precedent_type as any).binding_force).toBe(
         expected
       );
     }
