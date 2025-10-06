@@ -257,7 +257,7 @@ class Cidade extends Schema.Class<Cidade>("Cidade")({
       })
     )
   ),
-}) { }
+}) {}
 
 class Endereco extends Schema.Class<Endereco>("Endereco")({
   logradouro: Schema.optional(Schema.String),
@@ -278,7 +278,7 @@ class Endereco extends Schema.Class<Endereco>("Endereco")({
       Schema.annotations({ description: "8-digit postal code" })
     )
   ),
-}) { }
+}) {}
 
 class DocumentoIdentificacao extends Schema.Class<DocumentoIdentificacao>(
   "DocumentoIdentificacao"
@@ -287,7 +287,7 @@ class DocumentoIdentificacao extends Schema.Class<DocumentoIdentificacao>(
   emissorDocumento: Schema.NonEmptyString,
   tipoDocumento: ModalidadeDocumentoIdentificador,
   nome: Schema.optional(Schema.String),
-}) { }
+}) {}
 
 // PessoaSimples requires either numeroDocumentoPrincipal or justificativaAusenciaDocumentoPrincipal
 class PessoaSimples extends Schema.Class<PessoaSimples>("PessoaSimples")(
@@ -307,7 +307,7 @@ class PessoaSimples extends Schema.Class<PessoaSimples>("PessoaSimples")(
         : "Must provide either 'numeroDocumentoPrincipal' or 'justificativaAusenciaDocumentoPrincipal', but not both";
     })
   )
-) { }
+) {}
 
 // Recursive types for Pessoa - using Schema.Struct pattern for proper type inference
 const RelacionamentoPessoalSchema: Schema.Schema<any, any, never> =
@@ -350,8 +350,8 @@ const PessoaSchema: Schema.Schema<any, any, never> = Schema.Struct({
 
 // Export type interfaces and schemas for backward compatibility
 export interface RelacionamentoPessoal
-  extends Schema.Schema.Type<typeof RelacionamentoPessoalSchema> { }
-export interface Pessoa extends Schema.Schema.Type<typeof PessoaSchema> { }
+  extends Schema.Schema.Type<typeof RelacionamentoPessoalSchema> {}
+export interface Pessoa extends Schema.Schema.Type<typeof PessoaSchema> {}
 export const RelacionamentoPessoal = RelacionamentoPessoalSchema;
 export const Pessoa = PessoaSchema;
 
@@ -364,7 +364,7 @@ class RepresentanteProcessual extends Schema.Class<RepresentanteProcessual>(
   intimacao: Schema.Boolean,
   tipoRepresentante: ModalidadeRepresentanteProcessual,
   endereco: Schema.optional(Schema.Array(Endereco)),
-}) { }
+}) {}
 
 // Recursive type for Parte
 const ParteSchema: Schema.Schema<any, any, never> = Schema.Struct({
@@ -390,7 +390,7 @@ const ParteSchema: Schema.Schema<any, any, never> = Schema.Struct({
   })
 );
 
-export interface Parte extends Schema.Schema.Type<typeof ParteSchema> { }
+export interface Parte extends Schema.Schema.Type<typeof ParteSchema> {}
 export const Parte = ParteSchema;
 
 class PoloProcessual extends Schema.Class<PoloProcessual>("PoloProcessual")({
@@ -398,7 +398,7 @@ class PoloProcessual extends Schema.Class<PoloProcessual>("PoloProcessual")({
   parte: Schema.Array(Schema.suspend(() => ParteSchema)).pipe(
     Schema.minItems(1)
   ),
-}) { }
+}) {}
 
 // Recursive type for OrgaoJulgador
 const OrgaoJulgadorSchema: Schema.Schema<any, any, never> = Schema.Struct({
@@ -416,7 +416,7 @@ class CabecalhoProcessoSimples extends Schema.Class<CabecalhoProcessoSimples>(
   numero: NumeroUnico,
   classeProcessual: Schema.Int.pipe(Schema.positive()),
   orgaoJulgador: Schema.optional(Schema.suspend(() => OrgaoJulgadorSchema)),
-}) { }
+}) {}
 
 // Recursive type for AssuntoLocal
 const AssuntoLocalSchema: Schema.Schema<any, any, never> = Schema.Struct({
@@ -447,7 +447,7 @@ class VinculacaoProcessual extends Schema.Class<VinculacaoProcessual>(
 )({
   numeroProcesso: NumeroUnico,
   vinculo: ModalidadeVinculacaoProcesso,
-}) { }
+}) {}
 
 class UnidadeJudiciaria extends Schema.Class<UnidadeJudiciaria>(
   "UnidadeJudiciaria"
@@ -461,7 +461,7 @@ class UnidadeJudiciaria extends Schema.Class<UnidadeJudiciaria>(
     Schema.pattern(/^[0-9]{4}$/),
     Schema.annotations({ description: "4-digit unit code" })
   ),
-}) { }
+}) {}
 
 class HistoricoDeslocamento extends Schema.Class<HistoricoDeslocamento>(
   "HistoricoDeslocamento"
@@ -471,12 +471,12 @@ class HistoricoDeslocamento extends Schema.Class<HistoricoDeslocamento>(
   numeroProcesso: NumeroUnico,
   numeroInterno: Schema.optional(Schema.String),
   classeProcessual: Schema.Int.pipe(Schema.positive()),
-}) { }
+}) {}
 
 class Parametro extends Schema.Class<Parametro>("Parametro")({
   nome: Schema.NonEmptyString,
   valor: Schema.optional(Schema.String),
-}) { }
+}) {}
 
 class CabecalhoProcessual extends Schema.Class<CabecalhoProcessual>(
   "CabecalhoProcessual"
@@ -501,7 +501,7 @@ class CabecalhoProcessual extends Schema.Class<CabecalhoProcessual>(
   processoFisico: Schema.optional(Schema.Boolean),
   pedidoLiminarPendente: Schema.optional(Schema.Boolean),
   historicoDeslocamento: Schema.optional(Schema.Array(HistoricoDeslocamento)),
-}) { }
+}) {}
 
 // Recursive type for MovimentoLocal
 const MovimentoLocalSchema: Schema.Schema<any, any, never> = Schema.Struct({
@@ -518,7 +518,7 @@ class MovimentoNacional extends Schema.Class<MovimentoNacional>(
 )({
   codigoNacional: Schema.Int,
   complemento: Schema.optional(Schema.Array(Schema.String)),
-}) { }
+}) {}
 
 const MovimentacaoProcessualSchema: Schema.Schema<any, any, never> =
   Schema.Struct({
@@ -543,7 +543,7 @@ const MovimentacaoProcessual = MovimentacaoProcessualSchema;
 class Hash extends Schema.Class<Hash>("Hash")({
   hash: Schema.NonEmptyString,
   algoritmo: ModalidadeAlgoritmoHash,
-}) { }
+}) {}
 
 class AssinaturaDigital extends Schema.Class<AssinaturaDigital>(
   "AssinaturaDigital"
@@ -555,14 +555,14 @@ class AssinaturaDigital extends Schema.Class<AssinaturaDigital>(
   cadeiaCertificado: Schema.NonEmptyString,
   algoritmo: ModalidadeAlgoritmoAssinatura,
   codificacaoCadeiaCertificado: Schema.String,
-}) { }
+}) {}
 
 class SignatarioSimples extends Schema.Class<SignatarioSimples>(
   "SignatarioSimples"
 )({
   identificador: CadastroIdentificador,
   dataHora: DataHora,
-}) { }
+}) {}
 
 class Assinatura extends Schema.Class<Assinatura>("Assinatura")(
   Schema.Struct({
@@ -577,7 +577,7 @@ class Assinatura extends Schema.Class<Assinatura>("Assinatura")(
         : "Must provide either 'signatarioLogin' or 'assinaturaDigital'";
     })
   )
-) { }
+) {}
 
 class ConteudoDocumento extends Schema.Class<ConteudoDocumento>(
   "ConteudoDocumento"
@@ -592,7 +592,7 @@ class ConteudoDocumento extends Schema.Class<ConteudoDocumento>(
     )
   ),
   assinatura: Schema.optional(Schema.Array(Assinatura)),
-}) { }
+}) {}
 
 // Recursive type for DocumentoProcessual
 const DocumentoProcessualSchema: Schema.Schema<any, any, never> = Schema.Struct(
@@ -629,7 +629,7 @@ class AutenticacaoSimples extends Schema.Class<AutenticacaoSimples>(
       description: "Should be hashed/encrypted in production",
     })
   ),
-}) { }
+}) {}
 
 class Autenticacao extends Schema.Class<Autenticacao>("Autenticacao")(
   Schema.Struct({
@@ -649,7 +649,7 @@ class Autenticacao extends Schema.Class<Autenticacao>("Autenticacao")(
         : "Must provide exactly one of 'token', 'autenticacaoSimples', or 'autenticacaoCertificada'";
     })
   )
-) { }
+) {}
 
 class MensagemResposta extends Schema.Class<MensagemResposta>(
   "MensagemResposta"
@@ -658,20 +658,20 @@ class MensagemResposta extends Schema.Class<MensagemResposta>(
   codigo: Schema.NonEmptyString,
   codigoUnico: Schema.NonEmptyString,
   tipo: Schema.optional(ModalidadeTipoMensagem),
-}) { }
+}) {}
 
 class ReciboTokenAutenticacao extends Schema.Class<ReciboTokenAutenticacao>(
   "ReciboTokenAutenticacao"
 )({
   token: Schema.NonEmptyString,
   dataExpiracao: DataHora,
-}) { }
+}) {}
 
 class Recibo extends Schema.Class<Recibo>("Recibo")({
   sucesso: Schema.Boolean,
   mensagens: Schema.Array(MensagemResposta).pipe(Schema.minItems(1)),
   reciboToken: Schema.optional(ReciboTokenAutenticacao),
-}) { }
+}) {}
 
 class ReciboDocumentoProtocolado extends Schema.Class<ReciboDocumentoProtocolado>(
   "ReciboDocumentoProtocolado"
@@ -679,7 +679,7 @@ class ReciboDocumentoProtocolado extends Schema.Class<ReciboDocumentoProtocolado
   hashDocumento: Hash,
   dataRecebimento: DataHora,
   numeroProcesso: Schema.optional(NumeroUnico),
-}) { }
+}) {}
 
 class ReciboManifestacaoProcessual extends Schema.Class<ReciboManifestacaoProcessual>(
   "ReciboManifestacaoProcessual"
@@ -693,7 +693,7 @@ class ReciboManifestacaoProcessual extends Schema.Class<ReciboManifestacaoProces
     )
   ),
   reciboDocumentos: Schema.optional(Schema.Array(ReciboDocumentoProtocolado)),
-}) { }
+}) {}
 
 // =================================================================
 // 5. Core Entities for Service Operations
@@ -731,7 +731,7 @@ class AvisoComunicacaoPendente extends Schema.Class<AvisoComunicacaoPendente>(
   dataDisponibilizacao: DataHora,
   tipoPrazo: ModalidadePrazo,
   prazo: Schema.optional(Schema.Int.pipe(Schema.positive())),
-}) { }
+}) {}
 
 class ComunicacaoProcessual extends Schema.Class<ComunicacaoProcessual>(
   "ComunicacaoProcessual"
@@ -751,7 +751,7 @@ class ComunicacaoProcessual extends Schema.Class<ComunicacaoProcessual>(
   ),
   nivelSigilo: Schema.optional(Schema.Int),
   parametro: Schema.optional(Schema.Array(Parametro)),
-}) { }
+}) {}
 
 // =================================================================
 // 6. Service Request/Response Schemas
@@ -770,14 +770,14 @@ export class RequisicaoConsultarProcesso extends Schema.Class<RequisicaoConsulta
   incluirEnderecos: Schema.optional(Schema.Boolean),
   incluirMovimentos: Schema.optional(Schema.Boolean),
   incluirDocumentos: Schema.optional(Schema.Boolean),
-}) { }
+}) {}
 
 export class RespostaConsultarProcesso extends Schema.Class<RespostaConsultarProcesso>(
   "RespostaConsultarProcesso"
 )({
   recibo: Recibo,
   processo: Schema.optional(ProcessoJudicialSchema),
-}) { }
+}) {}
 
 // 6.2. Consultar Avisos Pendentes
 export class RequisicaoConsultarAvisosPendentes extends Schema.Class<RequisicaoConsultarAvisosPendentes>(
@@ -789,14 +789,14 @@ export class RequisicaoConsultarAvisosPendentes extends Schema.Class<RequisicaoC
   dataFinal: Schema.optional(DataHora),
   tipoPendencia: Schema.optional(ModalidadePendenciaComunicacao),
   tiposAviso: Schema.optional(Schema.Array(ModalidadeTipoComunicacao)),
-}) { }
+}) {}
 
 export class RespostaConsultarAvisosPendentes extends Schema.Class<RespostaConsultarAvisosPendentes>(
   "RespostaConsultarAvisosPendentes"
 )({
   recibo: Recibo,
   avisos: Schema.optional(Schema.Array(AvisoComunicacaoPendente)),
-}) { }
+}) {}
 
 // 6.3. Consultar Documentos Processo
 export class RequisicaoConsultarDocumentosProcesso extends Schema.Class<RequisicaoConsultarDocumentosProcesso>(
@@ -805,14 +805,14 @@ export class RequisicaoConsultarDocumentosProcesso extends Schema.Class<Requisic
   consultante: Autenticacao,
   numeroProcesso: NumeroUnico,
   idDocumento: Schema.Array(Schema.String).pipe(Schema.minItems(1)),
-}) { }
+}) {}
 
 export class RespostaConsultarDocumentosProcesso extends Schema.Class<RespostaConsultarDocumentosProcesso>(
   "RespostaConsultarDocumentosProcesso"
 )({
   recibo: Recibo,
   documentos: Schema.optional(Schema.Array(ConteudoDocumento)),
-}) { }
+}) {}
 
 // 6.4. Entregar Petição Inicial
 export class RequisicaoEntregarPeticaoInicial extends Schema.Class<RequisicaoEntregarPeticaoInicial>(
@@ -825,13 +825,13 @@ export class RequisicaoEntregarPeticaoInicial extends Schema.Class<RequisicaoEnt
   ).pipe(Schema.minItems(1)),
   dataEnvio: DataHora,
   parametros: Schema.optional(Schema.Array(Parametro)),
-}) { }
+}) {}
 
 export class RespostaEntregarPeticaoInicial extends Schema.Class<RespostaEntregarPeticaoInicial>(
   "RespostaEntregarPeticaoInicial"
 )({
   recibo: ReciboManifestacaoProcessual,
-}) { }
+}) {}
 
 // 6.5. Consultar Alteração
 export class RequisicaoConsultarAlteracao extends Schema.Class<RequisicaoConsultarAlteracao>(
@@ -839,7 +839,7 @@ export class RequisicaoConsultarAlteracao extends Schema.Class<RequisicaoConsult
 )({
   consultante: Autenticacao,
   numeroProcesso: NumeroUnico,
-}) { }
+}) {}
 
 export class RespostaConsultarAlteracao extends Schema.Class<RespostaConsultarAlteracao>(
   "RespostaConsultarAlteracao"
@@ -848,27 +848,27 @@ export class RespostaConsultarAlteracao extends Schema.Class<RespostaConsultarAl
   hashCabecalho: Schema.optional(Hash),
   hashMovimentacoes: Schema.optional(Hash),
   hashDocumentos: Schema.optional(Hash),
-}) { }
+}) {}
 
 // 6.6. Consultar Localidades
 export class RequisicaoConsultarLocalidades extends Schema.Class<RequisicaoConsultarLocalidades>(
   "RequisicaoConsultarLocalidades"
 )({
   estado: Schema.optional(ModalidadeUnidadeFederacao),
-}) { }
+}) {}
 
 class Localidade extends Schema.Class<Localidade>("Localidade")({
   codigo: Schema.NonEmptyString,
   descricao: Schema.NonEmptyString,
   municipio: Schema.optional(Cidade),
-}) { }
+}) {}
 
 export class RespostaConsultarLocalidades extends Schema.Class<RespostaConsultarLocalidades>(
   "RespostaConsultarLocalidades"
 )({
   recibo: Recibo,
   localidades: Schema.optional(Schema.Array(Localidade)),
-}) { }
+}) {}
 
 // =================================================================
 // EXPORTS - Organized namespace for all schemas
