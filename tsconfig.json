@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     // Environment setup & latest features
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
-    "allowJs": true,
+    "allowJs": false,
     // Bundler mode
     "moduleResolution": "bundler",
     "declaration": true,
@@ -55,8 +57,12 @@
     // Path mapping
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/types": ["types/index.ts"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/types": [
+        "types/index.ts"
+      ]
     },
     "plugins": [
       {
@@ -64,6 +70,15 @@
       }
     ]
   },
-  "include": ["src/**/*", "tests/**/*", "types/**/*"],
-  "exclude": ["node_modules", "dist", "build", "coverage"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage"
+  ]
 }

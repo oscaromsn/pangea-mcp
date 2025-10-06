@@ -9,10 +9,10 @@
     "server": "src/server.ts"
   },
   "scripts": {
+    "prepare": "effect-language-service patch",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "typecheck": "tsc --noEmit --pretty",
-    "typecheck:strict": "tsc --noEmit --strict --exactOptionalPropertyTypes --pretty",
     "check": "biome check --write .",
     "test": "bun test",
     "test:coverage": "bun test --coverage"
@@ -35,14 +35,16 @@
   "dependencies": {
     "@effect/opentelemetry": "^0.58.0",
     "@effect/platform": "^0.92.1",
-    "@modelcontextprotocol/sdk": "^1.18.2",
-    "effect": "^3.18.1",
+    "@effect/schema": "^0.75.5",
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "effect": "^3.18.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.4",
+    "@biomejs/biome": "^2.2.5",
+    "@effect/language-service": "^0.42.0",
     "@types/bun": "^1.2.23",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "bun": ">=1.0.0"
