@@ -33,7 +33,10 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@effect/opentelemetry": "^0.58.0",
+    "@effect/platform": "^0.92.1",
     "@modelcontextprotocol/sdk": "^1.18.2",
+    "effect": "^3.18.1",
     "zod": "^4.1.11"
   },
   "devDependencies": {
