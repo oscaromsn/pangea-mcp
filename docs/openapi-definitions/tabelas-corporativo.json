@@ -1,1 +1,2460 @@
-{"swagger":"2.0","info":{"description":"Serviço que padroniza o acesso às funcionalidades de: organizacional, lotação e autenticação do serviço corporativo","version":"1","title":"PDPJ - Serviço de proxy para o corporativo","termsOfService":"TERMS OF SERVICE URL","contact":{"name":"CNJ","url":"URL","email":"EMAIL"},"license":{"name":"LICENSE","url":"LICENSE URL"}},"host":"gateway.cloud.pje.jus.br","basePath":"/corporativo-proxy","tags":[{"name":"Advogado","description":"Advogado Rest Controller"},{"name":"Lotacao","description":"Lotacao Rest Controller"},{"name":"Magistrado","description":"Magistrado Rest Controller"},{"name":"Organizacional","description":"Organizacional Rest Controller"},{"name":"Sistema","description":"Sistema Rest Controller"},{"name":"Usuario","description":"Usuario Rest Controller"}],"paths":{"/api/v1/acessos":{"post":{"tags":["Usuario"],"summary":"Solicita acesso ao sistema corporativo através de usuário e senha","operationId":"acessarCorporativoUsingPOST","consumes":["application/json"],"produces":["application/json"],"parameters":[{"in":"body","name":"acesso","description":"acesso","required":true,"schema":{"$ref":"#/definitions/AcessoCorporativo"}}],"responses":{"200":{"description":"Acesso concedido","schema":{"$ref":"#/definitions/Response«string»"}},"400":{"description":"CPF não informado | CPF em tamanho inválido | CPF inválido"},"401":{"description":"Falha em efetuarLoginFederado para o CPF","schema":{"$ref":"#/definitions/Response"}},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/advogado/oab/{cpf}":{"get":{"tags":["Advogado"],"summary":"Consultar todas as inscrições OAB por CPF","description":"Retorna uma lista com todas as inscrições OAB vinculadas ao CPF informado","operationId":"consultarTodasOabsPorCpfUsingGET","produces":["*/*"],"parameters":[{"name":"cpf","in":"path","description":"cpf","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de perfis encontrada com sucesso","schema":{"type":"array","items":{"$ref":"#/definitions/AdvogadoPerfil"}}},"204":{"description":"Nenhuma inscrição OAB encontrada para o CPF informado","schema":{"type":"array","items":{"$ref":"#/definitions/AdvogadoPerfil"}}},"400":{"description":"CPF inválido"},"500":{"description":"Erro interno do servidor"}},"deprecated":false}},"/api/v1/advogado/oab/{uf}/{inscricao}":{"get":{"tags":["Advogado"],"summary":"Consultar advogado por UF e número de inscrição","description":"Retorna os dados do advogado com base na UF e número de inscrição na OAB","operationId":"consultarAdvogadoPorUfInscricaoUsingGET","produces":["*/*"],"parameters":[{"name":"inscricao","in":"path","description":"inscricao","required":true,"type":"string"},{"name":"uf","in":"path","description":"uf","required":true,"type":"string"}],"responses":{"200":{"description":"Perfil do advogado encontrado com sucesso","schema":{"$ref":"#/definitions/Perfil"}},"204":{"description":"Advogado não encontrado para a UF e inscrição informadas","schema":{"$ref":"#/definitions/Perfil"}},"400":{"description":"Parâmetros inválidos"},"500":{"description":"Erro interno do servidor"}},"deprecated":false}},"/api/v1/magistrado":{"get":{"tags":["Magistrado"],"summary":"Pesquisa magistrados","operationId":"pesquisarMagistradosUsingGET","produces":["application/json"],"parameters":[{"name":"siglaTribunal","in":"query","description":"Sigla do tribunal","required":true,"type":"string","allowEmptyValue":false,"enum":["CNJ","CSJT","STJ","STM","TJAC","TJAL","TJAM","TJAP","TJBA","TJCE","TJDFT","TJES","TJGO","TJMA","TJMG","TJMS","TJMT","TJPA","TJPB","TJPE","TJPI","TJPR","TJRJ","TJRN","TJRO","TJRR","TJRS","TJSC","TJSE","TJSP","TJTO","TJMRS","TJMMG","TJMSP","TREAC","TREAL","TREAM","TREAP","TREBA","TRECE","TREDF","TREES","TREGO","TREMA","TREMG","TREMS","TREMT","TREPA","TREPB","TREPE","TREPI","TREPR","TRERJ","TRERN","TRERO","TRERR","TRERS","TRESC","TRESE","TRESP","TRETO","TRF1","TRF2","TRF3","TRF4","TRF5","TRF6","TRT1","TRT2","TRT3","TRT4","TRT5","TRT6","TRT7","TRT8","TRT9","TRT10","TRT11","TRT12","TRT13","TRT14","TRT15","TRT16","TRT17","TRT18","TRT19","TRT20","TRT21","TRT22","TRT23","TRT24","TSE","TST"]}],"responses":{"200":{"description":"Lista de magistrados","schema":{"type":"array","items":{"$ref":"#/definitions/Magistrado"}}},"503":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/buscar-filhos-por-criterios":{"get":{"tags":["Organizacional"],"summary":"Retorna os filhos do órgão Externo por código e/ou CNPJ","operationId":"buscarFilhosOrgaoExternoPorCriteriosUsingGET","produces":["application/json"],"parameters":[{"name":"cnpj","in":"query","description":"cnpj","required":false,"type":"string"},{"name":"codigo-orgao","in":"query","description":"codigo-orgao","required":false,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Filhos do Órgão Externo encontrados","schema":{"$ref":"#/definitions/Response«List«OrgaoExternoGenerico»»"}},"400":{"description":"Pelo menos um parâmetro de busca deve ser informado"},"404":{"description":"Órgão Externo não encontrado"},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/buscar-por-criterios":{"get":{"tags":["Organizacional"],"summary":"Retorna o órgão Externo por código e/ou CNPJ","operationId":"buscarOrgaoExternoPorCriteriosUsingGET","produces":["application/json"],"parameters":[{"name":"cnpj","in":"query","description":"cnpj","required":false,"type":"string"},{"name":"codigo-orgao","in":"query","description":"codigo-orgao","required":false,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Órgão Externo encontrado","schema":{"$ref":"#/definitions/Response«OrgaoExternoGenerico»"}},"400":{"description":"Pelo menos um parâmetro de busca deve ser informado"},"404":{"description":"Órgão Externo não encontrado"},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/buscar-primeiro-pai-por-criterios":{"get":{"tags":["Organizacional"],"summary":"Retorna o primeiro pai do órgão Externo por código e/ou CNPJ","operationId":"buscarPrimeiroPaiOrgaoExternoPorCriteriosUsingGET","produces":["application/json"],"parameters":[{"name":"cnpj","in":"query","description":"cnpj","required":false,"type":"string"},{"name":"codigo-orgao","in":"query","description":"codigo-orgao","required":false,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Primeiro pai do Órgão Externo encontrado","schema":{"$ref":"#/definitions/Response«OrgaoExternoGenerico»"}},"400":{"description":"Pelo menos um parâmetro de busca deve ser informado"},"404":{"description":"Órgão Externo não encontrado"},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/estrutura-completa":{"get":{"tags":["Organizacional"],"summary":"Retorna a estrutura completa de Orgãos Externos  ","operationId":"recuperarOrgaoExternoEstruturaUsingGET","produces":["application/json"],"responses":{"200":{"description":"Órgão Externo ","schema":{"$ref":"#/definitions/Response«List«OrgaoExternoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/por-nome/{nome}":{"get":{"tags":["Organizacional"],"summary":"Retorna Objeto de Orgãos Externo  ","operationId":"recuperarOrgaoExternoPorNomeUsingGET","produces":["application/json"],"parameters":[{"name":"nome","in":"path","description":"nome","required":true,"type":"string"}],"responses":{"200":{"description":"Órgão Externo ","schema":{"$ref":"#/definitions/Response«List«OrgaoExternoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/{codigo-orgao}":{"get":{"tags":["Organizacional"],"summary":"Retorna o órgão Externo solicitado ","operationId":"recuperarOrgaoExternoUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Órgão Externo ","schema":{"$ref":"#/definitions/Response«OrgaoExternoGenerico»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/{codigo-orgao}/filhos":{"get":{"tags":["Organizacional"],"summary":"Retorna Filhos do órgão Externo solicitado ","operationId":"recuperarOrgaoExternoFilhosUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Órgão Externo ","schema":{"$ref":"#/definitions/Response«List«OrgaoExternoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-externo/{codigo-orgao}/primeiro-pai":{"get":{"tags":["Organizacional"],"summary":"Retorna o Pai do órgão Externo solicitado ","operationId":"recuperarOrgaoExternoPrimeiroPaiUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"integer","format":"int32"}],"responses":{"200":{"description":"Órgão Externo ","schema":{"$ref":"#/definitions/Response«OrgaoExternoGenerico»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos":{"post":{"tags":["Organizacional"],"summary":"Registrar novo órgão","operationId":"registrarOrgaoUsingPOST","consumes":["application/json"],"produces":["application/json"],"parameters":[{"in":"body","name":"request","description":"request","required":true,"schema":{"$ref":"#/definitions/IncluirOrgaoGenericoRequest"}}],"responses":{"200":{"description":"Órgão registrado","schema":{"$ref":"#/definitions/Response«OrgaoGenerico»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}":{"get":{"tags":["Organizacional"],"summary":"Retorna o órgão genérico solicitado","operationId":"recuperarOrgaoUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Órgão","schema":{"$ref":"#/definitions/Response«OrgaoGenerico»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}/especificos/estrutura-completa":{"get":{"tags":["Organizacional"],"summary":"Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - a estrutura completa de todos os próximos níveis","operationId":"recuperarOrgaosEspecificosEstruturaCompletaUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de órgãos","schema":{"$ref":"#/definitions/Response«List«OrgaoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}/especificos/estrutura-completa/codigos":{"get":{"tags":["Organizacional"],"summary":"Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - apenas os códigos dos órgãos de todos os próximos níveis","operationId":"recuperarOrgaosEspecificosEstruturaCompletaCodigosUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de órgãos","schema":{"$ref":"#/definitions/Response«List«string»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}/especificos/proximo-nivel":{"get":{"tags":["Organizacional"],"summary":"Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - apenas o próximo nível","operationId":"recuperarOrgaosEspecificosProximoNivelUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de órgãos","schema":{"$ref":"#/definitions/Response«List«OrgaoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}/gerais/estrutura-completa":{"get":{"tags":["Organizacional"],"summary":"Retorna os órgãos estruturalmente mais gerais (acima) na hierarquia de órgãos do tribunal - a estrutura completa de todos os níveis anteriores","operationId":"recuperarOrgaosGeraisEstruturaCompletaUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de órgãos","schema":{"$ref":"#/definitions/Response«List«OrgaoGenerico»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/orgaos-genericos/{codigo-orgao}/gerais/estrutura-completa/codigos":{"get":{"tags":["Organizacional"],"summary":"Retorna os órgãos estruturalmente mais gerais (acima) na hierarquia de órgãos do tribunal - apenas os códigos dos órgãos de todos os níveis anteriores","operationId":"recuperarOrgaosGeraisEstruturaCompletaCodigosUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-orgao","in":"path","description":"codigo-orgao","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de órgãos","schema":{"$ref":"#/definitions/Response«List«string»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/segmentos-justica":{"get":{"tags":["Organizacional"],"summary":"Retorna os tipos de segmento de justiça existentes","operationId":"recuperarSegmentosDeJusticaUsingGET","produces":["application/json"],"responses":{"200":{"description":"Lista de segmentos de justiça","schema":{"$ref":"#/definitions/Response«List«SegmentoJustica»»"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/sistema/{sigla-sistema}/perfis":{"get":{"tags":["Sistema"],"summary":"Pesquisa perfis pela sigla do sistema","operationId":"pesquisarPerfisPorSiglaSistemaUsingGET","produces":["application/json"],"parameters":[{"name":"sigla-sistema","in":"path","description":"Sigla do sistema","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de perfis","schema":{"type":"array","items":{"$ref":"#/definitions/PerfilSistema"}}},"400":{"description":"Falha de comunicação com o serviço corporativo rest | Sigla do sistema inválida!"},"404":{"description":"Sistema não encontrado | Não foi possível obter o identificador do sistema!"},"503":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/sistemas":{"get":{"tags":["Lotacao"],"summary":"Lista os sistemas disponíveis","operationId":"recuperarSistemasUsingGET","produces":["application/json"],"responses":{"200":{"description":"Lista de sistemas disponíveis","schema":{"$ref":"#/definitions/Response«List«Sistema»»"}},"400":{"description":"Falha de comunicação com o serviço corporativo rest"},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/sistemas/{sigla-sistema}":{"get":{"tags":["Lotacao"],"summary":"Recupera dados de um sistema específico dada sua sigla","operationId":"recuperarSistemaUsingGET","produces":["application/json"],"parameters":[{"name":"sigla-sistema","in":"path","description":"sigla-sistema","required":true,"type":"string"}],"responses":{"200":{"description":"Recupera sistema específico","schema":{"$ref":"#/definitions/Response«Sistema»"}},"404":{"description":"Sistema não encontrado"},"500":{"description":"Falha de comunicação com o serviço corporativo rest | Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/sistemas/{sigla-sistema}/perfis/{perfil}/usuarios":{"get":{"tags":["Lotacao"],"summary":"Pesquisa usuarios de pefis  por sistema","operationId":"recuperarPerfisSistemaUsingGET","produces":["application/json"],"parameters":[{"name":"perfil","in":"path","description":"perfil","required":true,"type":"string"},{"name":"sigla-sistema","in":"path","description":"sigla-sistema","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de perfis","schema":{"$ref":"#/definitions/Response«List«Perfil»»"}},"400":{"description":"Campos obrigatórios não informados | Campos com valores inválidos | Nenhum registro encontrado"},"404":{"description":"Perfil ou sistema não registrado"},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/tribunais/{codigo-segmento-justica}":{"get":{"tags":["Organizacional"],"summary":"Retorna os tribunais de acordo com o segmento de jutiça associado","operationId":"recuperarTribunaisUsingGET","produces":["application/json"],"parameters":[{"name":"codigo-segmento-justica","in":"path","description":"codigo-segmento-justica","required":true,"type":"string","enum":["JMU","JME","JTU","JTE","JEU","JEE","JCF","JCE","STJ","STF","CNJ"]}],"responses":{"200":{"description":"Lista de tribunais","schema":{"$ref":"#/definitions/Response«List«Tribunal»»"}},"400":{"description":"Segmento de justiça inválido","schema":{"$ref":"#/definitions/Response"}},"500":{"description":"Ocorreu um erro","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/usuarios/por-orgao/{codigo}":{"get":{"tags":["Usuario"],"summary":"Pesquisa usuarios por orgao","operationId":"pesquisarUsuariosPorOrgaoUsingGET","produces":["application/json"],"parameters":[{"name":"codigo","in":"path","description":"codigo","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de usuarios","schema":{"$ref":"#/definitions/Response«List«UsuarioCorporativo»»"}},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/usuarios/por-tipo/{tipoCargo}/tribunal/{siglaTribunal}":{"get":{"tags":["Usuario"],"summary":"Pesquisa usuarios por Tipo de Cargo","operationId":"pesquisarUsuariosPorOrgaoUsingGET_1","produces":["application/json"],"parameters":[{"name":"siglaTribunal","in":"path","description":"siglaTribunal","required":true,"type":"string","enum":["CNJ","CSJT","STJ","STM","TJAC","TJAL","TJAM","TJAP","TJBA","TJCE","TJDFT","TJES","TJGO","TJMA","TJMG","TJMS","TJMT","TJPA","TJPB","TJPE","TJPI","TJPR","TJRJ","TJRN","TJRO","TJRR","TJRS","TJSC","TJSE","TJSP","TJTO","TJMRS","TJMMG","TJMSP","TREAC","TREAL","TREAM","TREAP","TREBA","TRECE","TREDF","TREES","TREGO","TREMA","TREMG","TREMS","TREMT","TREPA","TREPB","TREPE","TREPI","TREPR","TRERJ","TRERN","TRERO","TRERR","TRERS","TRESC","TRESE","TRESP","TRETO","TRF1","TRF2","TRF3","TRF4","TRF5","TRF6","TRT1","TRT2","TRT3","TRT4","TRT5","TRT6","TRT7","TRT8","TRT9","TRT10","TRT11","TRT12","TRT13","TRT14","TRT15","TRT16","TRT17","TRT18","TRT19","TRT20","TRT21","TRT22","TRT23","TRT24","TSE","TST"]},{"name":"tipoCargo","in":"path","description":"tipoCargo","required":true,"type":"string","enum":["MAG","SPE","SPF","TER","USU","PER","COR"]}],"responses":{"200":{"description":"Lista de usuarios","schema":{"$ref":"#/definitions/Response«List«UsuarioPerfilOrgao»»"}},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/usuarios/{username}":{"get":{"tags":["Usuario"],"summary":"Pesquisa usuarios por username","operationId":"pesquisarUsuariosUsingGET","produces":["application/json"],"parameters":[{"name":"username","in":"path","description":"username","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de usuarios","schema":{"$ref":"#/definitions/Response«List«UsuarioCorporativo»»"}},"400":{"description":"CPF não informado | CPF em tamanho inválido | CPF inválido"},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/usuarios/{username}/perfis":{"get":{"tags":["Lotacao"],"summary":"Pesquisa perfil geral do usuário","operationId":"recuperarPerfilUsingGET","produces":["application/json"],"parameters":[{"name":"username","in":"path","description":"username","required":true,"type":"string"}],"responses":{"200":{"description":"Perfil geral","schema":{"$ref":"#/definitions/Response«Perfil»"}},"400":{"description":"CPF não informado | CPF em tamanho inválido | CPF inválido"},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}},"/api/v1/usuarios/{username}/sistemas/{sigla-sistema}/perfis":{"get":{"tags":["Lotacao"],"summary":"Pesquisa perfis de usuarios por sistema","operationId":"recuperarPerfisUsingGET","produces":["application/json"],"parameters":[{"name":"sigla-sistema","in":"path","description":"sigla-sistema","required":true,"type":"string"},{"name":"username","in":"path","description":"username","required":true,"type":"string"}],"responses":{"200":{"description":"Lista de perfis","schema":{"$ref":"#/definitions/Response«List«Perfil»»"}},"400":{"description":"A sigla <sigla-sistema> não corresponde a um sistema válido | CPF não informado | CPF em tamanho inválido | CPF inválido"},"500":{"description":"Ocorreu um erro inesperado","schema":{"$ref":"#/definitions/Response"}}},"deprecated":false}}},"definitions":{"AcessoCorporativo":{"type":"object","properties":{"password":{"type":"string"},"username":{"type":"string"}},"title":"AcessoCorporativo"},"AdvogadoPerfil":{"type":"object","properties":{"ativo":{"type":"string"},"bairro":{"type":"string"},"cep":{"type":"string"},"cidade":{"type":"string"},"cnpjOrgaoExterno":{"type":"string"},"codIbge":{"type":"string"},"codigoOrgao":{"type":"string"},"codigoOrgaoExterno":{"type":"string"},"codigoPerfil":{"type":"string"},"codigoSistema":{"type":"string"},"codigoTribunal":{"type":"string"},"codigoUsuario":{"type":"string"},"dataCadastro":{"type":"string","format":"date-time"},"documentoIdentificacao":{"type":"string"},"dscCidade":{"type":"string"},"email":{"type":"string"},"jtr":{"type":"string"},"letra":{"type":"string"},"logradouro":{"type":"string"},"nomeOrgao":{"type":"string"},"nomeOrgaoExterno":{"type":"string"},"nomePerfil":{"type":"string"},"nomeSistema":{"type":"string"},"nomeTribunal":{"type":"string"},"nomeUsuario":{"type":"string"},"numInscricao":{"type":"string"},"oab":{"type":"string"},"orgaoAcumulado":{"type":"array","items":{"$ref":"#/definitions/OrgaoGenerico"}},"seqCidade":{"type":"integer","format":"int64"},"sigUf":{"type":"string"},"siglaSistema":{"type":"string"},"situacaoInscricao":{"type":"string"},"tipoCargo":{"type":"string"},"tipoInscricao":{"type":"string"},"uf":{"type":"string"}},"title":"AdvogadoPerfil"},"IncluirOrgaoGenericoRequest":{"type":"object","properties":{"codigoOrgaoPai":{"type":"string"},"codigoTipoOrgao":{"type":"string"},"nome":{"type":"string"},"nomeTipoOrgao":{"type":"string"},"numeroDeOrdem":{"type":"integer","format":"int32"},"segmentoJustica":{"type":"string"}},"title":"IncluirOrgaoGenericoRequest"},"Magistrado":{"type":"object","properties":{"ativo":{"type":"boolean"},"codigoUsuario":{"type":"string"},"documentoIdentificacao":{"type":"string"},"email":{"type":"string"},"nomeUsuario":{"type":"string"},"numeroOrgao":{"type":"integer","format":"int32"},"orgao":{"$ref":"#/definitions/OrgaoCorporativo"},"orgaoExterno":{"$ref":"#/definitions/OrgaoExternoCorporativo"},"orgaosAcumulados":{"type":"array","items":{"$ref":"#/definitions/OrgaoAcumuladoCorporativo"}},"tipoCargo":{"type":"string","enum":["MAG","SPE","SPF","TER","USU","PER","COR"]},"uf":{"type":"string"}},"title":"Magistrado"},"OrgaoAcumuladoCorporativo":{"type":"object","properties":{"codigoHierarquia":{"type":"string"},"codigoOrgao":{"type":"integer","format":"int32"},"nomeOrgao":{"type":"string"}},"title":"OrgaoAcumuladoCorporativo"},"OrgaoCorporativo":{"type":"object","properties":{"codigoHierarquia":{"type":"string"},"codigoOrgao":{"type":"integer","format":"int32"},"nomeOrgao":{"type":"string"},"tribunal":{"$ref":"#/definitions/Tribunal"}},"title":"OrgaoCorporativo"},"OrgaoExternoCorporativo":{"type":"object","properties":{"codigoHierarquia":{"type":"string"},"codigoOrgao":{"type":"integer","format":"int32"},"nomeOrgao":{"type":"string"}},"title":"OrgaoExternoCorporativo"},"OrgaoExternoGenerico":{"type":"object","properties":{"COD_CNPJ":{"type":"string"},"COD_HIERARQUIA":{"type":"string"},"DSC_ORGAO":{"type":"string"},"FLG_ATIVO":{"type":"string"},"SEQ_ORGAO":{"type":"integer","format":"int32"},"SEQ_ORGAO_PAI":{"type":"string"},"tribunal":{"$ref":"#/definitions/Tribunal"}},"title":"OrgaoExternoGenerico"},"OrgaoGenerico":{"type":"object","properties":{"ativo":{"type":"string"},"codCidade":{"type":"integer","format":"int32"},"codIbge":{"type":"string"},"codigoOrgao":{"type":"string"},"codigoOrgaoPai":{"type":"string"},"codigoTipoOrgao":{"type":"string"},"nomeCidade":{"type":"string"},"nomeOrgao":{"type":"string"},"nomeTipoOrgao":{"type":"string"},"numeroDeOrdem":{"type":"integer","format":"int32"},"organizacaoInterna":{"type":"array","items":{"$ref":"#/definitions/OrgaoGenerico"}},"segmentoJustica":{"type":"string","enum":["JMU","JME","JTU","JTE","JEU","JEE","JCF","JCE","STJ","STF","CNJ"]},"sigUf":{"type":"string"},"tribunal":{"$ref":"#/definitions/Tribunal"}},"title":"OrgaoGenerico"},"Perfil":{"type":"object","properties":{"ativo":{"type":"string"},"cnpjOrgaoExterno":{"type":"string"},"codIbge":{"type":"string"},"codigoOrgao":{"type":"string"},"codigoOrgaoExterno":{"type":"string"},"codigoPerfil":{"type":"string"},"codigoSistema":{"type":"string"},"codigoTribunal":{"type":"string"},"codigoUsuario":{"type":"string"},"documentoIdentificacao":{"type":"string"},"dscCidade":{"type":"string"},"email":{"type":"string"},"jtr":{"type":"string"},"nomeOrgao":{"type":"string"},"nomeOrgaoExterno":{"type":"string"},"nomePerfil":{"type":"string"},"nomeSistema":{"type":"string"},"nomeTribunal":{"type":"string"},"nomeUsuario":{"type":"string"},"oab":{"type":"string"},"orgaoAcumulado":{"type":"array","items":{"$ref":"#/definitions/OrgaoGenerico"}},"seqCidade":{"type":"integer","format":"int64"},"sigUf":{"type":"string"},"siglaSistema":{"type":"string"},"tipoCargo":{"type":"string"}},"title":"Perfil"},"PerfilSistema":{"type":"object","properties":{"codigoPerfil":{"type":"integer","format":"int32"},"descricaoPerfil":{"type":"string"},"flagAtivo":{"type":"string"},"gestaoAdmRegional":{"type":"string"},"nomePerfil":{"type":"string"}},"title":"PerfilSistema"},"Response":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"object"},"status":{"type":"string"}},"title":"Response"},"Response«List«OrgaoExternoGenerico»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/OrgaoExternoGenerico"}},"status":{"type":"string"}},"title":"Response«List«OrgaoExternoGenerico»»"},"Response«List«OrgaoGenerico»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/OrgaoGenerico"}},"status":{"type":"string"}},"title":"Response«List«OrgaoGenerico»»"},"Response«List«Perfil»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/Perfil"}},"status":{"type":"string"}},"title":"Response«List«Perfil»»"},"Response«List«SegmentoJustica»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/SegmentoJustica"}},"status":{"type":"string"}},"title":"Response«List«SegmentoJustica»»"},"Response«List«Sistema»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/Sistema"}},"status":{"type":"string"}},"title":"Response«List«Sistema»»"},"Response«List«Tribunal»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/Tribunal"}},"status":{"type":"string"}},"title":"Response«List«Tribunal»»"},"Response«List«UsuarioCorporativo»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/UsuarioCorporativo"}},"status":{"type":"string"}},"title":"Response«List«UsuarioCorporativo»»"},"Response«List«UsuarioPerfilOrgao»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"$ref":"#/definitions/UsuarioPerfilOrgao"}},"status":{"type":"string"}},"title":"Response«List«UsuarioPerfilOrgao»»"},"Response«List«string»»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"array","items":{"type":"string"}},"status":{"type":"string"}},"title":"Response«List«string»»"},"Response«OrgaoExternoGenerico»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"$ref":"#/definitions/OrgaoExternoGenerico"},"status":{"type":"string"}},"title":"Response«OrgaoExternoGenerico»"},"Response«OrgaoGenerico»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"$ref":"#/definitions/OrgaoGenerico"},"status":{"type":"string"}},"title":"Response«OrgaoGenerico»"},"Response«Perfil»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"$ref":"#/definitions/Perfil"},"status":{"type":"string"}},"title":"Response«Perfil»"},"Response«Sistema»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"$ref":"#/definitions/Sistema"},"status":{"type":"string"}},"title":"Response«Sistema»"},"Response«string»":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"messages":{"type":"array","items":{"type":"string"}},"result":{"type":"string"},"status":{"type":"string"}},"title":"Response«string»"},"SegmentoJustica":{"type":"object","properties":{"abrangencia":{"type":"string"},"codigoSegmento":{"type":"string"},"ramoJustica":{"type":"string"},"tipoJustica":{"type":"string"}},"title":"SegmentoJustica"},"Sistema":{"type":"object","properties":{"ativo":{"type":"string"},"codigo":{"type":"string"},"nome":{"type":"string"},"sigla":{"type":"string"},"url":{"type":"string"}},"title":"Sistema"},"Tribunal":{"type":"object","properties":{"codigoTribunal":{"type":"string"},"jtr":{"type":"string"},"nomeTribunal":{"type":"string"},"segmentoJustica":{"type":"string","enum":["JMU","JME","JTU","JTE","JEU","JEE","JCF","JCE","STJ","STF","CNJ"]}},"title":"Tribunal"},"UsuarioCorporativo":{"type":"object","properties":{"cargo":{"type":"string"},"codigoOrgao":{"type":"string"},"codigoUsuario":{"type":"string"},"documentoIdentificacao":{"type":"string"},"nomeUsuario":{"type":"string"}},"title":"UsuarioCorporativo"},"UsuarioPerfilOrgao":{"type":"object","properties":{"codCnpj":{"type":"string"},"codIbge":{"type":"string"},"dscCidade":{"type":"string"},"dsc_email":{"type":"string"},"dsc_orgao":{"type":"string"},"dsc_orgao_externo":{"type":"string"},"dsc_perfil":{"type":"string"},"dsc_sistema":{"type":"string"},"dsc_sistema_sigla":{"type":"string"},"dsc_tribunal_pai":{"type":"string"},"flg_ativo":{"type":"string"},"nom_usuario":{"type":"string"},"num_cpf":{"type":"string"},"num_jtr":{"type":"string"},"orgaoAcumulado":{"type":"array","items":{"$ref":"#/definitions/OrgaoGenerico"}},"seqCidade":{"type":"integer","format":"int64"},"seq_orgao":{"type":"integer","format":"int32"},"seq_orgao_externo":{"type":"integer","format":"int32"},"seq_perfil":{"type":"integer","format":"int32"},"seq_sistema":{"type":"integer","format":"int32"},"seq_tribunal_pai":{"type":"integer","format":"int32"},"seq_usuario":{"type":"integer","format":"int32"},"sig_tipo_cargo":{"type":"string"},"sig_uf":{"type":"string"}},"title":"UsuarioPerfilOrgao"}}}
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Serviço que padroniza o acesso às funcionalidades de: organizacional, lotação e autenticação do serviço corporativo",
+    "version": "1",
+    "title": "PDPJ - Serviço de proxy para o corporativo",
+    "termsOfService": "TERMS OF SERVICE URL",
+    "contact": {
+      "name": "CNJ",
+      "url": "URL",
+      "email": "EMAIL"
+    },
+    "license": {
+      "name": "LICENSE",
+      "url": "LICENSE URL"
+    }
+  },
+  "host": "gateway.cloud.pje.jus.br",
+  "basePath": "/corporativo-proxy",
+  "tags": [
+    {
+      "name": "Advogado",
+      "description": "Advogado Rest Controller"
+    },
+    {
+      "name": "Lotacao",
+      "description": "Lotacao Rest Controller"
+    },
+    {
+      "name": "Magistrado",
+      "description": "Magistrado Rest Controller"
+    },
+    {
+      "name": "Organizacional",
+      "description": "Organizacional Rest Controller"
+    },
+    {
+      "name": "Sistema",
+      "description": "Sistema Rest Controller"
+    },
+    {
+      "name": "Usuario",
+      "description": "Usuario Rest Controller"
+    }
+  ],
+  "paths": {
+    "/api/v1/acessos": {
+      "post": {
+        "tags": [
+          "Usuario"
+        ],
+        "summary": "Solicita acesso ao sistema corporativo através de usuário e senha",
+        "operationId": "acessarCorporativoUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "acesso",
+            "description": "acesso",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AcessoCorporativo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Acesso concedido",
+            "schema": {
+              "$ref": "#/definitions/Response«string»"
+            }
+          },
+          "400": {
+            "description": "CPF não informado | CPF em tamanho inválido | CPF inválido"
+          },
+          "401": {
+            "description": "Falha em efetuarLoginFederado para o CPF",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/advogado/oab/{cpf}": {
+      "get": {
+        "tags": [
+          "Advogado"
+        ],
+        "summary": "Consultar todas as inscrições OAB por CPF",
+        "description": "Retorna uma lista com todas as inscrições OAB vinculadas ao CPF informado",
+        "operationId": "consultarTodasOabsPorCpfUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "cpf",
+            "in": "path",
+            "description": "cpf",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de perfis encontrada com sucesso",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AdvogadoPerfil"
+              }
+            }
+          },
+          "204": {
+            "description": "Nenhuma inscrição OAB encontrada para o CPF informado",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AdvogadoPerfil"
+              }
+            }
+          },
+          "400": {
+            "description": "CPF inválido"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/advogado/oab/{uf}/{inscricao}": {
+      "get": {
+        "tags": [
+          "Advogado"
+        ],
+        "summary": "Consultar advogado por UF e número de inscrição",
+        "description": "Retorna os dados do advogado com base na UF e número de inscrição na OAB",
+        "operationId": "consultarAdvogadoPorUfInscricaoUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "inscricao",
+            "in": "path",
+            "description": "inscricao",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "uf",
+            "in": "path",
+            "description": "uf",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil do advogado encontrado com sucesso",
+            "schema": {
+              "$ref": "#/definitions/Perfil"
+            }
+          },
+          "204": {
+            "description": "Advogado não encontrado para a UF e inscrição informadas",
+            "schema": {
+              "$ref": "#/definitions/Perfil"
+            }
+          },
+          "400": {
+            "description": "Parâmetros inválidos"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/magistrado": {
+      "get": {
+        "tags": [
+          "Magistrado"
+        ],
+        "summary": "Pesquisa magistrados",
+        "operationId": "pesquisarMagistradosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "siglaTribunal",
+            "in": "query",
+            "description": "Sigla do tribunal",
+            "required": true,
+            "type": "string",
+            "allowEmptyValue": false,
+            "enum": [
+              "CNJ",
+              "CSJT",
+              "STJ",
+              "STM",
+              "TJAC",
+              "TJAL",
+              "TJAM",
+              "TJAP",
+              "TJBA",
+              "TJCE",
+              "TJDFT",
+              "TJES",
+              "TJGO",
+              "TJMA",
+              "TJMG",
+              "TJMS",
+              "TJMT",
+              "TJPA",
+              "TJPB",
+              "TJPE",
+              "TJPI",
+              "TJPR",
+              "TJRJ",
+              "TJRN",
+              "TJRO",
+              "TJRR",
+              "TJRS",
+              "TJSC",
+              "TJSE",
+              "TJSP",
+              "TJTO",
+              "TJMRS",
+              "TJMMG",
+              "TJMSP",
+              "TREAC",
+              "TREAL",
+              "TREAM",
+              "TREAP",
+              "TREBA",
+              "TRECE",
+              "TREDF",
+              "TREES",
+              "TREGO",
+              "TREMA",
+              "TREMG",
+              "TREMS",
+              "TREMT",
+              "TREPA",
+              "TREPB",
+              "TREPE",
+              "TREPI",
+              "TREPR",
+              "TRERJ",
+              "TRERN",
+              "TRERO",
+              "TRERR",
+              "TRERS",
+              "TRESC",
+              "TRESE",
+              "TRESP",
+              "TRETO",
+              "TRF1",
+              "TRF2",
+              "TRF3",
+              "TRF4",
+              "TRF5",
+              "TRF6",
+              "TRT1",
+              "TRT2",
+              "TRT3",
+              "TRT4",
+              "TRT5",
+              "TRT6",
+              "TRT7",
+              "TRT8",
+              "TRT9",
+              "TRT10",
+              "TRT11",
+              "TRT12",
+              "TRT13",
+              "TRT14",
+              "TRT15",
+              "TRT16",
+              "TRT17",
+              "TRT18",
+              "TRT19",
+              "TRT20",
+              "TRT21",
+              "TRT22",
+              "TRT23",
+              "TRT24",
+              "TSE",
+              "TST"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de magistrados",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Magistrado"
+              }
+            }
+          },
+          "503": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/buscar-filhos-por-criterios": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os filhos do órgão Externo por código e/ou CNPJ",
+        "operationId": "buscarFilhosOrgaoExternoPorCriteriosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "description": "cnpj",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "codigo-orgao",
+            "in": "query",
+            "description": "codigo-orgao",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filhos do Órgão Externo encontrados",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoExternoGenerico»»"
+            }
+          },
+          "400": {
+            "description": "Pelo menos um parâmetro de busca deve ser informado"
+          },
+          "404": {
+            "description": "Órgão Externo não encontrado"
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/buscar-por-criterios": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna o órgão Externo por código e/ou CNPJ",
+        "operationId": "buscarOrgaoExternoPorCriteriosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "description": "cnpj",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "codigo-orgao",
+            "in": "query",
+            "description": "codigo-orgao",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo encontrado",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoExternoGenerico»"
+            }
+          },
+          "400": {
+            "description": "Pelo menos um parâmetro de busca deve ser informado"
+          },
+          "404": {
+            "description": "Órgão Externo não encontrado"
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/buscar-primeiro-pai-por-criterios": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna o primeiro pai do órgão Externo por código e/ou CNPJ",
+        "operationId": "buscarPrimeiroPaiOrgaoExternoPorCriteriosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "description": "cnpj",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "codigo-orgao",
+            "in": "query",
+            "description": "codigo-orgao",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Primeiro pai do Órgão Externo encontrado",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoExternoGenerico»"
+            }
+          },
+          "400": {
+            "description": "Pelo menos um parâmetro de busca deve ser informado"
+          },
+          "404": {
+            "description": "Órgão Externo não encontrado"
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/estrutura-completa": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna a estrutura completa de Orgãos Externos  ",
+        "operationId": "recuperarOrgaoExternoEstruturaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo ",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoExternoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/por-nome/{nome}": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna Objeto de Orgãos Externo  ",
+        "operationId": "recuperarOrgaoExternoPorNomeUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "path",
+            "description": "nome",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo ",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoExternoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/{codigo-orgao}": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna o órgão Externo solicitado ",
+        "operationId": "recuperarOrgaoExternoUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo ",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoExternoGenerico»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/{codigo-orgao}/filhos": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna Filhos do órgão Externo solicitado ",
+        "operationId": "recuperarOrgaoExternoFilhosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo ",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoExternoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-externo/{codigo-orgao}/primeiro-pai": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna o Pai do órgão Externo solicitado ",
+        "operationId": "recuperarOrgaoExternoPrimeiroPaiUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão Externo ",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoExternoGenerico»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos": {
+      "post": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Registrar novo órgão",
+        "operationId": "registrarOrgaoUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "request",
+            "description": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IncluirOrgaoGenericoRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão registrado",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoGenerico»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna o órgão genérico solicitado",
+        "operationId": "recuperarOrgaoUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Órgão",
+            "schema": {
+              "$ref": "#/definitions/Response«OrgaoGenerico»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}/especificos/estrutura-completa": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - a estrutura completa de todos os próximos níveis",
+        "operationId": "recuperarOrgaosEspecificosEstruturaCompletaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órgãos",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}/especificos/estrutura-completa/codigos": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - apenas os códigos dos órgãos de todos os próximos níveis",
+        "operationId": "recuperarOrgaosEspecificosEstruturaCompletaCodigosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órgãos",
+            "schema": {
+              "$ref": "#/definitions/Response«List«string»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}/especificos/proximo-nivel": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os órgãos estruturalmente mais específicos (abaixo) na hierarquia de órgãos de tribunais - apenas o próximo nível",
+        "operationId": "recuperarOrgaosEspecificosProximoNivelUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órgãos",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}/gerais/estrutura-completa": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os órgãos estruturalmente mais gerais (acima) na hierarquia de órgãos do tribunal - a estrutura completa de todos os níveis anteriores",
+        "operationId": "recuperarOrgaosGeraisEstruturaCompletaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órgãos",
+            "schema": {
+              "$ref": "#/definitions/Response«List«OrgaoGenerico»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/orgaos-genericos/{codigo-orgao}/gerais/estrutura-completa/codigos": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os órgãos estruturalmente mais gerais (acima) na hierarquia de órgãos do tribunal - apenas os códigos dos órgãos de todos os níveis anteriores",
+        "operationId": "recuperarOrgaosGeraisEstruturaCompletaCodigosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-orgao",
+            "in": "path",
+            "description": "codigo-orgao",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órgãos",
+            "schema": {
+              "$ref": "#/definitions/Response«List«string»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/segmentos-justica": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os tipos de segmento de justiça existentes",
+        "operationId": "recuperarSegmentosDeJusticaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de segmentos de justiça",
+            "schema": {
+              "$ref": "#/definitions/Response«List«SegmentoJustica»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/sistema/{sigla-sistema}/perfis": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Pesquisa perfis pela sigla do sistema",
+        "operationId": "pesquisarPerfisPorSiglaSistemaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sigla-sistema",
+            "in": "path",
+            "description": "Sigla do sistema",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de perfis",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PerfilSistema"
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de comunicação com o serviço corporativo rest | Sigla do sistema inválida!"
+          },
+          "404": {
+            "description": "Sistema não encontrado | Não foi possível obter o identificador do sistema!"
+          },
+          "503": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/sistemas": {
+      "get": {
+        "tags": [
+          "Lotacao"
+        ],
+        "summary": "Lista os sistemas disponíveis",
+        "operationId": "recuperarSistemasUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de sistemas disponíveis",
+            "schema": {
+              "$ref": "#/definitions/Response«List«Sistema»»"
+            }
+          },
+          "400": {
+            "description": "Falha de comunicação com o serviço corporativo rest"
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/sistemas/{sigla-sistema}": {
+      "get": {
+        "tags": [
+          "Lotacao"
+        ],
+        "summary": "Recupera dados de um sistema específico dada sua sigla",
+        "operationId": "recuperarSistemaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sigla-sistema",
+            "in": "path",
+            "description": "sigla-sistema",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recupera sistema específico",
+            "schema": {
+              "$ref": "#/definitions/Response«Sistema»"
+            }
+          },
+          "404": {
+            "description": "Sistema não encontrado"
+          },
+          "500": {
+            "description": "Falha de comunicação com o serviço corporativo rest | Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/sistemas/{sigla-sistema}/perfis/{perfil}/usuarios": {
+      "get": {
+        "tags": [
+          "Lotacao"
+        ],
+        "summary": "Pesquisa usuarios de pefis  por sistema",
+        "operationId": "recuperarPerfisSistemaUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "perfil",
+            "in": "path",
+            "description": "perfil",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "sigla-sistema",
+            "in": "path",
+            "description": "sigla-sistema",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de perfis",
+            "schema": {
+              "$ref": "#/definitions/Response«List«Perfil»»"
+            }
+          },
+          "400": {
+            "description": "Campos obrigatórios não informados | Campos com valores inválidos | Nenhum registro encontrado"
+          },
+          "404": {
+            "description": "Perfil ou sistema não registrado"
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/tribunais/{codigo-segmento-justica}": {
+      "get": {
+        "tags": [
+          "Organizacional"
+        ],
+        "summary": "Retorna os tribunais de acordo com o segmento de jutiça associado",
+        "operationId": "recuperarTribunaisUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo-segmento-justica",
+            "in": "path",
+            "description": "codigo-segmento-justica",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "JMU",
+              "JME",
+              "JTU",
+              "JTE",
+              "JEU",
+              "JEE",
+              "JCF",
+              "JCE",
+              "STJ",
+              "STF",
+              "CNJ"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tribunais",
+            "schema": {
+              "$ref": "#/definitions/Response«List«Tribunal»»"
+            }
+          },
+          "400": {
+            "description": "Segmento de justiça inválido",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/usuarios/por-orgao/{codigo}": {
+      "get": {
+        "tags": [
+          "Usuario"
+        ],
+        "summary": "Pesquisa usuarios por orgao",
+        "operationId": "pesquisarUsuariosPorOrgaoUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "path",
+            "description": "codigo",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios",
+            "schema": {
+              "$ref": "#/definitions/Response«List«UsuarioCorporativo»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/usuarios/por-tipo/{tipoCargo}/tribunal/{siglaTribunal}": {
+      "get": {
+        "tags": [
+          "Usuario"
+        ],
+        "summary": "Pesquisa usuarios por Tipo de Cargo",
+        "operationId": "pesquisarUsuariosPorOrgaoUsingGET_1",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "siglaTribunal",
+            "in": "path",
+            "description": "siglaTribunal",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "CNJ",
+              "CSJT",
+              "STJ",
+              "STM",
+              "TJAC",
+              "TJAL",
+              "TJAM",
+              "TJAP",
+              "TJBA",
+              "TJCE",
+              "TJDFT",
+              "TJES",
+              "TJGO",
+              "TJMA",
+              "TJMG",
+              "TJMS",
+              "TJMT",
+              "TJPA",
+              "TJPB",
+              "TJPE",
+              "TJPI",
+              "TJPR",
+              "TJRJ",
+              "TJRN",
+              "TJRO",
+              "TJRR",
+              "TJRS",
+              "TJSC",
+              "TJSE",
+              "TJSP",
+              "TJTO",
+              "TJMRS",
+              "TJMMG",
+              "TJMSP",
+              "TREAC",
+              "TREAL",
+              "TREAM",
+              "TREAP",
+              "TREBA",
+              "TRECE",
+              "TREDF",
+              "TREES",
+              "TREGO",
+              "TREMA",
+              "TREMG",
+              "TREMS",
+              "TREMT",
+              "TREPA",
+              "TREPB",
+              "TREPE",
+              "TREPI",
+              "TREPR",
+              "TRERJ",
+              "TRERN",
+              "TRERO",
+              "TRERR",
+              "TRERS",
+              "TRESC",
+              "TRESE",
+              "TRESP",
+              "TRETO",
+              "TRF1",
+              "TRF2",
+              "TRF3",
+              "TRF4",
+              "TRF5",
+              "TRF6",
+              "TRT1",
+              "TRT2",
+              "TRT3",
+              "TRT4",
+              "TRT5",
+              "TRT6",
+              "TRT7",
+              "TRT8",
+              "TRT9",
+              "TRT10",
+              "TRT11",
+              "TRT12",
+              "TRT13",
+              "TRT14",
+              "TRT15",
+              "TRT16",
+              "TRT17",
+              "TRT18",
+              "TRT19",
+              "TRT20",
+              "TRT21",
+              "TRT22",
+              "TRT23",
+              "TRT24",
+              "TSE",
+              "TST"
+            ]
+          },
+          {
+            "name": "tipoCargo",
+            "in": "path",
+            "description": "tipoCargo",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "MAG",
+              "SPE",
+              "SPF",
+              "TER",
+              "USU",
+              "PER",
+              "COR"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios",
+            "schema": {
+              "$ref": "#/definitions/Response«List«UsuarioPerfilOrgao»»"
+            }
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/usuarios/{username}": {
+      "get": {
+        "tags": [
+          "Usuario"
+        ],
+        "summary": "Pesquisa usuarios por username",
+        "operationId": "pesquisarUsuariosUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "username",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios",
+            "schema": {
+              "$ref": "#/definitions/Response«List«UsuarioCorporativo»»"
+            }
+          },
+          "400": {
+            "description": "CPF não informado | CPF em tamanho inválido | CPF inválido"
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/usuarios/{username}/perfis": {
+      "get": {
+        "tags": [
+          "Lotacao"
+        ],
+        "summary": "Pesquisa perfil geral do usuário",
+        "operationId": "recuperarPerfilUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "username",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil geral",
+            "schema": {
+              "$ref": "#/definitions/Response«Perfil»"
+            }
+          },
+          "400": {
+            "description": "CPF não informado | CPF em tamanho inválido | CPF inválido"
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/v1/usuarios/{username}/sistemas/{sigla-sistema}/perfis": {
+      "get": {
+        "tags": [
+          "Lotacao"
+        ],
+        "summary": "Pesquisa perfis de usuarios por sistema",
+        "operationId": "recuperarPerfisUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sigla-sistema",
+            "in": "path",
+            "description": "sigla-sistema",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "in": "path",
+            "description": "username",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de perfis",
+            "schema": {
+              "$ref": "#/definitions/Response«List«Perfil»»"
+            }
+          },
+          "400": {
+            "description": "A sigla <sigla-sistema> não corresponde a um sistema válido | CPF não informado | CPF em tamanho inválido | CPF inválido"
+          },
+          "500": {
+            "description": "Ocorreu um erro inesperado",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "definitions": {
+    "AcessoCorporativo": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "title": "AcessoCorporativo"
+    },
+    "AdvogadoPerfil": {
+      "type": "object",
+      "properties": {
+        "ativo": {
+          "type": "string"
+        },
+        "bairro": {
+          "type": "string"
+        },
+        "cep": {
+          "type": "string"
+        },
+        "cidade": {
+          "type": "string"
+        },
+        "cnpjOrgaoExterno": {
+          "type": "string"
+        },
+        "codIbge": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "string"
+        },
+        "codigoOrgaoExterno": {
+          "type": "string"
+        },
+        "codigoPerfil": {
+          "type": "string"
+        },
+        "codigoSistema": {
+          "type": "string"
+        },
+        "codigoTribunal": {
+          "type": "string"
+        },
+        "codigoUsuario": {
+          "type": "string"
+        },
+        "dataCadastro": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "documentoIdentificacao": {
+          "type": "string"
+        },
+        "dscCidade": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "jtr": {
+          "type": "string"
+        },
+        "letra": {
+          "type": "string"
+        },
+        "logradouro": {
+          "type": "string"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        },
+        "nomeOrgaoExterno": {
+          "type": "string"
+        },
+        "nomePerfil": {
+          "type": "string"
+        },
+        "nomeSistema": {
+          "type": "string"
+        },
+        "nomeTribunal": {
+          "type": "string"
+        },
+        "nomeUsuario": {
+          "type": "string"
+        },
+        "numInscricao": {
+          "type": "string"
+        },
+        "oab": {
+          "type": "string"
+        },
+        "orgaoAcumulado": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoGenerico"
+          }
+        },
+        "seqCidade": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "sigUf": {
+          "type": "string"
+        },
+        "siglaSistema": {
+          "type": "string"
+        },
+        "situacaoInscricao": {
+          "type": "string"
+        },
+        "tipoCargo": {
+          "type": "string"
+        },
+        "tipoInscricao": {
+          "type": "string"
+        },
+        "uf": {
+          "type": "string"
+        }
+      },
+      "title": "AdvogadoPerfil"
+    },
+    "IncluirOrgaoGenericoRequest": {
+      "type": "object",
+      "properties": {
+        "codigoOrgaoPai": {
+          "type": "string"
+        },
+        "codigoTipoOrgao": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "nomeTipoOrgao": {
+          "type": "string"
+        },
+        "numeroDeOrdem": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "segmentoJustica": {
+          "type": "string"
+        }
+      },
+      "title": "IncluirOrgaoGenericoRequest"
+    },
+    "Magistrado": {
+      "type": "object",
+      "properties": {
+        "ativo": {
+          "type": "boolean"
+        },
+        "codigoUsuario": {
+          "type": "string"
+        },
+        "documentoIdentificacao": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nomeUsuario": {
+          "type": "string"
+        },
+        "numeroOrgao": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "orgao": {
+          "$ref": "#/definitions/OrgaoCorporativo"
+        },
+        "orgaoExterno": {
+          "$ref": "#/definitions/OrgaoExternoCorporativo"
+        },
+        "orgaosAcumulados": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoAcumuladoCorporativo"
+          }
+        },
+        "tipoCargo": {
+          "type": "string",
+          "enum": [
+            "MAG",
+            "SPE",
+            "SPF",
+            "TER",
+            "USU",
+            "PER",
+            "COR"
+          ]
+        },
+        "uf": {
+          "type": "string"
+        }
+      },
+      "title": "Magistrado"
+    },
+    "OrgaoAcumuladoCorporativo": {
+      "type": "object",
+      "properties": {
+        "codigoHierarquia": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        }
+      },
+      "title": "OrgaoAcumuladoCorporativo"
+    },
+    "OrgaoCorporativo": {
+      "type": "object",
+      "properties": {
+        "codigoHierarquia": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        },
+        "tribunal": {
+          "$ref": "#/definitions/Tribunal"
+        }
+      },
+      "title": "OrgaoCorporativo"
+    },
+    "OrgaoExternoCorporativo": {
+      "type": "object",
+      "properties": {
+        "codigoHierarquia": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        }
+      },
+      "title": "OrgaoExternoCorporativo"
+    },
+    "OrgaoExternoGenerico": {
+      "type": "object",
+      "properties": {
+        "COD_CNPJ": {
+          "type": "string"
+        },
+        "COD_HIERARQUIA": {
+          "type": "string"
+        },
+        "DSC_ORGAO": {
+          "type": "string"
+        },
+        "FLG_ATIVO": {
+          "type": "string"
+        },
+        "SEQ_ORGAO": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "SEQ_ORGAO_PAI": {
+          "type": "string"
+        },
+        "tribunal": {
+          "$ref": "#/definitions/Tribunal"
+        }
+      },
+      "title": "OrgaoExternoGenerico"
+    },
+    "OrgaoGenerico": {
+      "type": "object",
+      "properties": {
+        "ativo": {
+          "type": "string"
+        },
+        "codCidade": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "codIbge": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "string"
+        },
+        "codigoOrgaoPai": {
+          "type": "string"
+        },
+        "codigoTipoOrgao": {
+          "type": "string"
+        },
+        "nomeCidade": {
+          "type": "string"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        },
+        "nomeTipoOrgao": {
+          "type": "string"
+        },
+        "numeroDeOrdem": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "organizacaoInterna": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoGenerico"
+          }
+        },
+        "segmentoJustica": {
+          "type": "string",
+          "enum": [
+            "JMU",
+            "JME",
+            "JTU",
+            "JTE",
+            "JEU",
+            "JEE",
+            "JCF",
+            "JCE",
+            "STJ",
+            "STF",
+            "CNJ"
+          ]
+        },
+        "sigUf": {
+          "type": "string"
+        },
+        "tribunal": {
+          "$ref": "#/definitions/Tribunal"
+        }
+      },
+      "title": "OrgaoGenerico"
+    },
+    "Perfil": {
+      "type": "object",
+      "properties": {
+        "ativo": {
+          "type": "string"
+        },
+        "cnpjOrgaoExterno": {
+          "type": "string"
+        },
+        "codIbge": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "string"
+        },
+        "codigoOrgaoExterno": {
+          "type": "string"
+        },
+        "codigoPerfil": {
+          "type": "string"
+        },
+        "codigoSistema": {
+          "type": "string"
+        },
+        "codigoTribunal": {
+          "type": "string"
+        },
+        "codigoUsuario": {
+          "type": "string"
+        },
+        "documentoIdentificacao": {
+          "type": "string"
+        },
+        "dscCidade": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "jtr": {
+          "type": "string"
+        },
+        "nomeOrgao": {
+          "type": "string"
+        },
+        "nomeOrgaoExterno": {
+          "type": "string"
+        },
+        "nomePerfil": {
+          "type": "string"
+        },
+        "nomeSistema": {
+          "type": "string"
+        },
+        "nomeTribunal": {
+          "type": "string"
+        },
+        "nomeUsuario": {
+          "type": "string"
+        },
+        "oab": {
+          "type": "string"
+        },
+        "orgaoAcumulado": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoGenerico"
+          }
+        },
+        "seqCidade": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "sigUf": {
+          "type": "string"
+        },
+        "siglaSistema": {
+          "type": "string"
+        },
+        "tipoCargo": {
+          "type": "string"
+        }
+      },
+      "title": "Perfil"
+    },
+    "PerfilSistema": {
+      "type": "object",
+      "properties": {
+        "codigoPerfil": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "descricaoPerfil": {
+          "type": "string"
+        },
+        "flagAtivo": {
+          "type": "string"
+        },
+        "gestaoAdmRegional": {
+          "type": "string"
+        },
+        "nomePerfil": {
+          "type": "string"
+        }
+      },
+      "title": "PerfilSistema"
+    },
+    "Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "object"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response"
+    },
+    "Response«List«OrgaoExternoGenerico»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoExternoGenerico"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«OrgaoExternoGenerico»»"
+    },
+    "Response«List«OrgaoGenerico»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoGenerico"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«OrgaoGenerico»»"
+    },
+    "Response«List«Perfil»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Perfil"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«Perfil»»"
+    },
+    "Response«List«SegmentoJustica»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentoJustica"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«SegmentoJustica»»"
+    },
+    "Response«List«Sistema»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Sistema"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«Sistema»»"
+    },
+    "Response«List«Tribunal»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tribunal"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«Tribunal»»"
+    },
+    "Response«List«UsuarioCorporativo»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UsuarioCorporativo"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«UsuarioCorporativo»»"
+    },
+    "Response«List«UsuarioPerfilOrgao»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UsuarioPerfilOrgao"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«UsuarioPerfilOrgao»»"
+    },
+    "Response«List«string»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«List«string»»"
+    },
+    "Response«OrgaoExternoGenerico»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "$ref": "#/definitions/OrgaoExternoGenerico"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«OrgaoExternoGenerico»"
+    },
+    "Response«OrgaoGenerico»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "$ref": "#/definitions/OrgaoGenerico"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«OrgaoGenerico»"
+    },
+    "Response«Perfil»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "$ref": "#/definitions/Perfil"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«Perfil»"
+    },
+    "Response«Sistema»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "$ref": "#/definitions/Sistema"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«Sistema»"
+    },
+    "Response«string»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "title": "Response«string»"
+    },
+    "SegmentoJustica": {
+      "type": "object",
+      "properties": {
+        "abrangencia": {
+          "type": "string"
+        },
+        "codigoSegmento": {
+          "type": "string"
+        },
+        "ramoJustica": {
+          "type": "string"
+        },
+        "tipoJustica": {
+          "type": "string"
+        }
+      },
+      "title": "SegmentoJustica"
+    },
+    "Sistema": {
+      "type": "object",
+      "properties": {
+        "ativo": {
+          "type": "string"
+        },
+        "codigo": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "sigla": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "title": "Sistema"
+    },
+    "Tribunal": {
+      "type": "object",
+      "properties": {
+        "codigoTribunal": {
+          "type": "string"
+        },
+        "jtr": {
+          "type": "string"
+        },
+        "nomeTribunal": {
+          "type": "string"
+        },
+        "segmentoJustica": {
+          "type": "string",
+          "enum": [
+            "JMU",
+            "JME",
+            "JTU",
+            "JTE",
+            "JEU",
+            "JEE",
+            "JCF",
+            "JCE",
+            "STJ",
+            "STF",
+            "CNJ"
+          ]
+        }
+      },
+      "title": "Tribunal"
+    },
+    "UsuarioCorporativo": {
+      "type": "object",
+      "properties": {
+        "cargo": {
+          "type": "string"
+        },
+        "codigoOrgao": {
+          "type": "string"
+        },
+        "codigoUsuario": {
+          "type": "string"
+        },
+        "documentoIdentificacao": {
+          "type": "string"
+        },
+        "nomeUsuario": {
+          "type": "string"
+        }
+      },
+      "title": "UsuarioCorporativo"
+    },
+    "UsuarioPerfilOrgao": {
+      "type": "object",
+      "properties": {
+        "codCnpj": {
+          "type": "string"
+        },
+        "codIbge": {
+          "type": "string"
+        },
+        "dscCidade": {
+          "type": "string"
+        },
+        "dsc_email": {
+          "type": "string"
+        },
+        "dsc_orgao": {
+          "type": "string"
+        },
+        "dsc_orgao_externo": {
+          "type": "string"
+        },
+        "dsc_perfil": {
+          "type": "string"
+        },
+        "dsc_sistema": {
+          "type": "string"
+        },
+        "dsc_sistema_sigla": {
+          "type": "string"
+        },
+        "dsc_tribunal_pai": {
+          "type": "string"
+        },
+        "flg_ativo": {
+          "type": "string"
+        },
+        "nom_usuario": {
+          "type": "string"
+        },
+        "num_cpf": {
+          "type": "string"
+        },
+        "num_jtr": {
+          "type": "string"
+        },
+        "orgaoAcumulado": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrgaoGenerico"
+          }
+        },
+        "seqCidade": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "seq_orgao": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seq_orgao_externo": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seq_perfil": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seq_sistema": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seq_tribunal_pai": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seq_usuario": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "sig_tipo_cargo": {
+          "type": "string"
+        },
+        "sig_uf": {
+          "type": "string"
+        }
+      },
+      "title": "UsuarioPerfilOrgao"
+    }
+  }
+}
