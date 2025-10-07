@@ -16,6 +16,35 @@ Available at https://datajud-wiki.cnj.jus.br/api-publica/exemplos/exemplo2
 
 No exemplo abaixo é realizada a consulta de processos que possuam a Classe Processual **1116 – "Execução Fiscal"** do Órgão Julgador **13597 - VARA DE EXECUÇÃO FISCAL DO DF** no tribunal **TJDFT**.
 
+```python
+import requests
+import json
+
+url = "https://api-publica.datajud.cnj.jus.br/api_publica_tjdft/_search"
+
+payload = json.dumps({
+    "query": {
+        "bool": {
+            "must": [
+                {"match": {"classe.codigo": 1116}},
+                {"match": {"orgaoJulgador.codigo": 13597}}
+            ]
+        }
+    }
+}
+)
+
+#Substituir <API Key> pela Chave Pública
+headers = {
+  'Authorization': 'ApiKey <API Key>',
+  'Content-Type': 'application/json'
+}
+
+response = requests.request("POST", url, headers=headers, data=payload)
+
+print(response.text)
+```
+
 ## Resposta
 
 A resposta esperado é um JSON com os metadados de 1 ou mais processos conforme o critério da busca:
