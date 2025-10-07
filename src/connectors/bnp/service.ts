@@ -116,4 +116,4 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
         }),
     };
   }),
-}) { }
+}) {}
