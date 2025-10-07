@@ -85,6 +85,8 @@ export const DatajudHit = Schema.Struct({
   _id: Schema.String,
   _score: Schema.NullOr(Schema.Number),
   _source: DatajudProcessSource,
+  // Sort values for pagination with search_after (only present when sorting is used)
+  sort: Schema.optional(Schema.Array(Schema.Unknown)),
 });
 
 export type DatajudHit = Schema.Schema.Type<typeof DatajudHit>;
