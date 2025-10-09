@@ -47,7 +47,7 @@ export type SimpleCodeName = Schema.Schema.Type<typeof SimpleCodeName>;
 export const OrgaoJulgador = Schema.Struct({
   codigo: Schema.Number,
   nome: Schema.String,
-  codigoMunicipioIBGE: Schema.Number,
+  codigoMunicipioIBGE: Schema.optional(Schema.Number),
 });
 
 export type OrgaoJulgador = Schema.Schema.Type<typeof OrgaoJulgador>;
