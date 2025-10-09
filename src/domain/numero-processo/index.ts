@@ -22,6 +22,7 @@ export {
 } from "./errors";
 // Export mappings (useful for reference and extension)
 export {
+  isSupportedTribunalAlias,
   JUSTICE_SEGMENT_NAMES,
   STATE_CODE_TO_ABBREV,
   SUPPORTED_TRIBUNAL_ALIASES,

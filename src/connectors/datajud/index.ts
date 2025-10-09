@@ -17,6 +17,8 @@ export {
   inferTribunalAlias,
   // Advanced usage
   inferTribunalAliasFromComponents,
+  // Type guards
+  isSupportedTribunalAlias,
   // Reference data
   JUSTICE_SEGMENT_NAMES,
   JusticaSegment,

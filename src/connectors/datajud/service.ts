@@ -12,7 +12,9 @@ import {
 import { Effect, Match } from "effect";
 import {
   inferTribunalAlias,
+  isSupportedTribunalAlias,
   parseNumeroProcesso,
+  type TribunalAlias,
 } from "../../domain/numero-processo";
 import { DATAJUD_BASE_URL, DATAJUD_PUBLIC_API_KEY } from "./config";
 import {
@@ -39,23 +41,24 @@ export class DatajudService extends Effect.Service<DatajudService>()(
         /**
          * Search for judicial process metadata
          *
-         * This method automatically:
-         * - Infers the tribunal alias from the process number (supports all 91 DataJud endpoints)
-         * - Normalizes the process number (handles both formatted and unformatted input)
-         * - Constructs the Elasticsearch query (or uses provided custom query)
+         * This method supports two input modes:
+         * 1. **Process Number**: Automatically infers tribunal and normalizes number
+         * 2. **Tribunal Alias**: Directly searches specified tribunal (requires custom query)
          *
-         * @param processNumber - Brazilian judicial process number (formatted or unformatted)
-         *                        Examples: "0722391-40.2017.8.07.0001" or "07223914020178070001"
-         *                        Used for automatic tribunal inference (required)
+         * @param input - Either:
+         *   - Process number (string): "0722391-40.2017.8.07.0001" or "07223914020178070001"
+         *     Automatically infers tribunal and defaults to searching for this process
+         *   - Tribunal alias (TribunalAlias): TribunalAlias("tjsp"), TribunalAlias("trf1"), etc.
+         *     Searches specified tribunal with custom query
          * @param options - Search configuration with type-safe Elasticsearch Query DSL
          * @returns Effect that succeeds with validated search response or fails with domain errors
          *
          * @example
-         * // Simple search by process number
+         * // Mode 1: Simple search by process number
          * const result = yield* datajudService.searchProcessMetadata("00008323520184013202");
          *
          * @example
-         * // Advanced filter: Search by class and judging body
+         * // Mode 1: Process number with custom query (for pagination/filtering)
          * const result = yield* datajudService.searchProcessMetadata("07223914020178070001", {
          *   query: {
          *     bool: {
@@ -69,58 +72,59 @@ export class DatajudService extends Effect.Service<DatajudService>()(
          * });
          *
          * @example
-         * // Pagination with search_after
-         * const page1 = yield* datajudService.searchProcessMetadata("07223914020178070001", {
-         *   query: {
-         *     bool: {
-         *       must: [
-         *         { match: { "classe.codigo": 1116 } },
-         *         { match: { "orgaoJulgador.codigo": 13597 } }
-         *       ]
-         *     }
-         *   },
-         *   size: 100,
-         *   sort: [{ "@timestamp": { order: "asc" } }]
-         * });
-         *
-         * const lastHit = page1.hits.hits[page1.hits.hits.length - 1];
-         * const page2 = yield* datajudService.searchProcessMetadata("07223914020178070001", {
-         *   query: {
-         *     bool: {
-         *       must: [
-         *         { match: { "classe.codigo": 1116 } },
-         *         { match: { "orgaoJulgador.codigo": 13597 } }
-         *       ]
-         *     }
-         *   },
-         *   size: 100,
-         *   sort: [{ "@timestamp": { order: "asc" } }],
-         *   search_after: lastHit.sort
-         * });
+         * // Mode 2: Direct tribunal specification (clean API for searches without specific process)
+         * const result = yield* datajudService.searchProcessMetadata(
+         *   TribunalAlias("tjsp"),
+         *   {
+         *     query: {
+         *       bool: {
+         *         must: [{ match: { "orgaoJulgador.nome": "Praia Grande" } }],
+         *         should: [
+         *           { match: { "classe.nome": "usucapião" } },
+         *           { match: { "assuntos.nome": "usucapião" } }
+         *         ]
+         *       }
+         *     },
+         *     size: 50
+         *   }
+         * );
          */
         searchProcessMetadata: (
-          processNumber: string,
+          input: string | TribunalAlias,
           options?: DatajudSearchOptions
         ) =>
           Effect.gen(function* () {
-            // Parse the process number to extract components and validate format
-            const components = yield* parseNumeroProcesso(processNumber);
+            let tribunalAlias: TribunalAlias;
+            let normalizedProcessNumber: string | undefined;
 
-            // Get the unformatted (normalized) process number for DataJud API
-            // DataJud stores process numbers without formatting (20 digits)
-            const normalizedProcessNumber = `${components.sequencial.toString().padStart(7, "0")}${components.dv.toString().padStart(2, "0")}${components.ano}${components.id_orgao}${components.id_tribunal.toString().padStart(2, "0")}${components.id_unidade_origem.toString().padStart(4, "0")}`;
+            // Check if input is a tribunal alias or process number
+            if (isSupportedTribunalAlias(input)) {
+              // Case 1: Tribunal alias provided directly
+              tribunalAlias = input;
+              normalizedProcessNumber = undefined; // No process number to normalize
+            } else {
+              // Case 2: Process number provided (existing behavior)
+              // Parse the process number to extract components and validate format
+              const components = yield* parseNumeroProcesso(input);
 
-            // Automatically infer the tribunal alias from the process number
-            const tribunalAlias = yield* inferTribunalAlias(processNumber);
+              // Get the unformatted (normalized) process number for DataJud API
+              // DataJud stores process numbers without formatting (20 digits)
+              normalizedProcessNumber = `${components.sequencial.toString().padStart(7, "0")}${components.dv.toString().padStart(2, "0")}${components.ano}${components.id_orgao}${components.id_tribunal.toString().padStart(2, "0")}${components.id_unidade_origem.toString().padStart(4, "0")}`;
+
+              // Automatically infer the tribunal alias from the process number
+              tribunalAlias = yield* inferTribunalAlias(input);
+            }
 
             // Build the complete Elasticsearch request body
-            // If custom query provided, use it; otherwise, default to match query on process number
+            // If custom query provided, use it
+            // Otherwise, if process number available, default to match query on it
+            // Otherwise (tribunal alias only), default to match_all (return sample processes)
             const requestBody = {
-              query: options?.query ?? {
-                match: {
-                  numeroProcesso: normalizedProcessNumber,
-                },
-              },
+              query:
+                options?.query ??
+                (normalizedProcessNumber
+                  ? { match: { numeroProcesso: normalizedProcessNumber } }
+                  : { match_all: {} }),
               size: options?.size ?? 10,
               ...(options?.sort && { sort: options.sort }),
               ...(options?.search_after && {

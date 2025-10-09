@@ -158,3 +158,26 @@ export const SUPPORTED_TRIBUNAL_ALIASES = [
   TribunalAlias("tjmrs"),
   TribunalAlias("tjmsp"),
 ] as const;
+
+/**
+ * Set of supported tribunal aliases for O(1) lookup
+ * Used for runtime validation of tribunal alias strings
+ */
+const SUPPORTED_TRIBUNAL_ALIASES_SET = new Set(SUPPORTED_TRIBUNAL_ALIASES);
+
+/**
+ * Type guard to check if a string is a valid supported tribunal alias
+ *
+ * @param input - String to check
+ * @returns True if input is a valid tribunal alias
+ *
+ * @example
+ * if (isSupportedTribunalAlias("tjsp")) {
+ *   // TypeScript knows it's TribunalAlias
+ * }
+ */
+export const isSupportedTribunalAlias = (
+  input: string
+): input is TribunalAlias => {
+  return SUPPORTED_TRIBUNAL_ALIASES_SET.has(input as TribunalAlias);
+};
