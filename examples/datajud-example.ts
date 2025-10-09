@@ -14,6 +14,7 @@ import {
   DatajudService,
   DatajudServiceLive,
   type DatajudProcessSource,
+  TribunalAlias,
 } from "../src/connectors/datajud/index";
 
 /**
@@ -25,9 +26,11 @@ const displayProcessDetails = (process: DatajudProcessSource) => {
   console.log(`  Tribunal: ${process.tribunal}`);
   console.log(`  Class: ${process.classe.codigo} - ${process.classe.nome}`);
   console.log(`  Court: ${process.orgaoJulgador.nome}`);
-  console.log(
-    `  Municipality IBGE: ${process.orgaoJulgador.codigoMunicipioIBGE}`,
-  );
+  if (process.orgaoJulgador.codigoMunicipioIBGE !== undefined) {
+    console.log(
+      `  Municipality IBGE: ${process.orgaoJulgador.codigoMunicipioIBGE}`,
+    );
+  }
   console.log(`  Filing Date: ${process.dataAjuizamento}`);
   console.log(`  Degree: ${process.grau}`);
   console.log();
@@ -191,6 +194,74 @@ const example3Pagination = Effect.gen(function* () {
 });
 
 /**
+ * Example 4: Text-based search with bool query (must + should)
+ * Real-world use case: Legal research using human-readable field names
+ * Demonstrates direct tribunal specification (no process number needed)
+ */
+const example4TextSearch = Effect.gen(function* () {
+  console.log("📍 Example 4: Text Search - Usucapião in Praia Grande");
+  console.log("Query: MUST be in Praia Grande court");
+  console.log("       SHOULD match 'usucapião' in class OR subject");
+  console.log("Tribunal: TJSP (Tribunal de Justiça de São Paulo)");
+  console.log();
+
+  const datajudService = yield* DatajudService;
+
+  const result = yield* datajudService.searchProcessMetadata(
+    TribunalAlias("tjsp"), // Direct tribunal specification (clean API!)
+    {
+      query: {
+        bool: {
+          must: [
+            { match: { [DatajudFields.orgaoJulgador.nome]: "Praia Grande" } },
+          ],
+          should: [
+            { match: { [DatajudFields.classe.nome]: "usucapião" } },
+            { match: { [DatajudFields.assuntos.nome]: "usucapião" } },
+          ],
+        },
+      },
+      size: 50,
+    },
+  );
+
+  console.log(`✅ Search successful!`);
+  console.log(`Total hits: ${result.hits.total.value}`);
+  console.log(`Search took: ${result.took}ms`);
+  console.log(`Returned: ${result.hits.hits.length} processes`);
+  console.log();
+
+  if (result.hits.hits.length > 0) {
+    console.log("Sample results:");
+    result.hits.hits.slice(0, 3).forEach((hit, index) => {
+      console.log(`\n  ${index + 1}. ${hit._source.numeroProcesso}`);
+      console.log(`     Class: ${hit._source.classe.nome}`);
+      console.log(`     Court: ${hit._source.orgaoJulgador.nome}`);
+      if (hit._source.assuntos && hit._source.assuntos.length > 0) {
+        const firstAssunto = hit._source.assuntos[0];
+        if (firstAssunto) {
+          let assuntoNome: string | undefined;
+          if (Array.isArray(firstAssunto)) {
+            assuntoNome = firstAssunto[0]?.nome;
+          } else if ("nome" in firstAssunto) {
+            assuntoNome = firstAssunto.nome;
+          }
+          if (assuntoNome) {
+            console.log(`     Subject: ${assuntoNome}`);
+          }
+        }
+      }
+    });
+
+    if (result.hits.hits.length > 3) {
+      console.log(`\n  ... and ${result.hits.hits.length - 3} more`);
+    }
+  } else {
+    console.log("⚠️  No results found");
+  }
+});
+
+/**
  * Main program - Run all examples
  */
 const runDatajudExamples = Effect.gen(function* () {
@@ -205,7 +276,10 @@ const runDatajudExamples = Effect.gen(function* () {
   yield* example3Pagination;
   console.log("\n" + "=".repeat(60) + "\n");
 
-  console.log("✅ All examples completed successfully!");
+  yield* example4TextSearch;
+  console.log("\n" + "=".repeat(60) + "\n");
+
+  console.log("✅ All 4 examples completed successfully!");
 });
 
 // Run all examples with proper error handling
@@ -227,6 +301,6 @@ Effect.runPromiseExit(program).then((exit) => {
     console.error(exit.cause);
     process.exit(1);
   } else {
-    console.log("\n✅ All examples completed successfully!");
+    console.log("\n✅ All 4 examples completed successfully!");
   }
 });
