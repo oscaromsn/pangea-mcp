@@ -92,7 +92,7 @@ export const FalcaoSearchFilter = Schema.Struct({
         description: "Page size - API only allows 5 or 10",
       })
     )
-  ).pipe(Schema.withConstructorDefault(() => 10)),
+  ).pipe(Schema.withConstructorDefault(() => 10 as const)),
   page: Schema.optional(Schema.Int.pipe(Schema.nonNegative())).pipe(
     Schema.withConstructorDefault(() => 0)
   ),
