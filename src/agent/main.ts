@@ -20,6 +20,47 @@ import { systemPrompt } from "./system-prompt";
 import { LegalToolkit } from "./tools";
 
 /**
+ * Handle streaming events from the LLM
+ *
+ * Processes different event types and outputs them to the console:
+ * - text-delta: Stream the response text
+ * - reasoning-delta: Stream the AI's thinking process
+ * - tool-params-start: Show which tool is being called
+ * - tool-call: Show tool arguments
+ * - tool-result: Show tool results
+ */
+function handleStreamEvent(event: any): void {
+  if (event.type === "text-delta") {
+    process.stdout.write(event.delta);
+  } else if (event.type === "finish") {
+    process.stdout.write("\n");
+  } else if (event.type === "reasoning-start") {
+    process.stdout.write("\n💭 Raciocínio:\n");
+  } else if (event.type === "reasoning-delta") {
+    // Stream the AI's reasoning process
+    process.stdout.write(event.delta);
+  } else if (event.type === "reasoning-end") {
+    process.stdout.write("\n");
+  } else if (event.type === "tool-params-start") {
+    // Show which tool is being called
+    const toolName = event.name;
+    process.stdout.write(`\n🔧 Ferramenta: ${toolName}\n`);
+    process.stdout.write("Argumentos: ");
+  } else if (event.type === "tool-params-delta") {
+    // Stream the tool arguments as they're being built
+    process.stdout.write(event.delta);
+  } else if (event.type === "tool-params-end") {
+    // Arguments complete - add newline
+    process.stdout.write("\n");
+  } else if (event.type === "tool-call") {
+    // Tool execution happens here (arguments already shown)
+  } else if (event.type === "tool-result") {
+    // Show tool result
+    process.stdout.write(`\n📊 Resultado:\n${event.result}\n`);
+  }
+}
+
+/**
  * Main Interactive REPL Program
  *
  * This program:
@@ -64,19 +105,7 @@ const main = Effect.gen(function* () {
         toolkit: LegalToolkit,
       })
       .pipe(
-        Stream.tap((event) =>
-          Effect.sync(() => {
-            if (event.type === "text-delta") {
-              process.stdout.write(event.delta);
-            } else if (event.type === "finish") {
-              process.stdout.write("\n");
-            } else if (event.type === "reasoning-start") {
-              process.stdout.write("\n[Pensando...]\n");
-            } else if (event.type === "reasoning-end") {
-              process.stdout.write("[Concluído]\n\n");
-            }
-          })
-        ),
+        Stream.tap((event) => Effect.sync(() => handleStreamEvent(event))),
         // Accumulate response data to check for tool calls
         Stream.runFold(
           { text: "", toolCalls: [] as Array<any> },
@@ -100,19 +129,7 @@ const main = Effect.gen(function* () {
           toolkit: LegalToolkit,
         })
         .pipe(
-          Stream.tap((event) =>
-            Effect.sync(() => {
-              if (event.type === "text-delta") {
-                process.stdout.write(event.delta);
-              } else if (event.type === "finish") {
-                process.stdout.write("\n");
-              } else if (event.type === "reasoning-start") {
-                process.stdout.write("\n[Pensando...]\n");
-              } else if (event.type === "reasoning-end") {
-                process.stdout.write("[Concluído]\n\n");
-              }
-            })
-          ),
+          Stream.tap((event) => Effect.sync(() => handleStreamEvent(event))),
           Stream.runFold(
             { text: "", toolCalls: [] as Array<any> },
             (acc, event) => {
