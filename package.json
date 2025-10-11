@@ -50,6 +50,8 @@
     "prepare": "effect-language-service patch",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
+    "agent": "bun src/agent/main.ts",
+    "agent:dev": "bun --watch src/agent/main.ts",
     "typecheck": "bunx --bun tsc --noEmit --pretty",
     "check": "biome check --write .",
     "test": "bun test",
