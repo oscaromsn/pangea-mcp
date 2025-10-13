@@ -10,7 +10,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect, Match } from "effect";
+import { Effect } from "effect";
 import { BNP_BASE_URL } from "./config";
 import { BnpApiError, BnpNetworkError, BnpValidationError } from "./errors";
 import {
@@ -93,34 +93,29 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
               )
             ),
             Effect.scoped,
-            Effect.catchAll((error) =>
-              Match.value(error).pipe(
-                Match.tags({
-                  RequestError: (e) =>
-                    Effect.fail(
-                      new BnpNetworkError({
-                        message: `Network error while calling BNP API: ${e.reason}`,
-                        cause: e,
-                      })
-                    ),
-                  ResponseError: (e) =>
-                    Effect.fail(
-                      new BnpApiError({
-                        status: e.response.status,
-                        statusText: `HTTP ${e.response.status}`,
-                        details: e.reason,
-                      })
-                    ),
-                  ParseError: (e) =>
-                    Effect.fail(
-                      new BnpValidationError({
-                        message: `Response validation failed: ${e.message}`,
-                      })
-                    ),
-                }),
-                Match.orElse(() => Effect.fail(error))
-              )
-            )
+            Effect.catchTags({
+              RequestError: (e) =>
+                Effect.fail(
+                  new BnpNetworkError({
+                    message: `Network error while calling BNP API: ${e.reason}`,
+                    cause: e,
+                  })
+                ),
+              ResponseError: (e) =>
+                Effect.fail(
+                  new BnpApiError({
+                    status: e.response.status,
+                    statusText: `HTTP ${e.response.status}`,
+                    details: e.reason,
+                  })
+                ),
+              ParseError: (e) =>
+                Effect.fail(
+                  new BnpValidationError({
+                    message: `Response validation failed: ${e.message}`,
+                  })
+                ),
+            })
           );
         }),
     };

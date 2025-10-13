@@ -8,9 +8,8 @@
  * Following TDD best practices with @effect/vitest
  */
 
-import { describe, it } from "@effect/vitest";
+import { assert, describe, it } from "@effect/vitest";
 import { Cause, Effect, Exit, Layer, Option } from "effect";
-import { assert } from "vitest";
 import {
   emptyBnpSearchResponse,
   minimalBnpFilter,
