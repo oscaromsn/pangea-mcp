@@ -9,7 +9,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect, Match, Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { FALCAO_API_TOKEN_SECRET, FALCAO_BASE_URL } from "./config";
 import {
   FalcaoApiError,
@@ -125,34 +125,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoSearchResponseSchema)
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -177,34 +172,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -232,34 +222,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoDocumentSchema)
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -296,34 +281,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoCountResponseSchema)
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -348,34 +328,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -396,34 +371,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoVersionInfoSchema)
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
 
@@ -448,34 +418,29 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new FalcaoNetworkError({
-                          message: `Network error while calling Falcao API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new FalcaoApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new FalcaoValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new FalcaoNetworkError({
+                      message: `Network error while calling Falcao API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new FalcaoApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new FalcaoValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                    })
+                  ),
+              })
             );
           }),
       };

@@ -9,7 +9,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect, Match } from "effect";
+import { Effect } from "effect";
 import {
   inferTribunalAlias,
   isSupportedTribunalAlias,
@@ -150,36 +150,31 @@ export class DatajudService extends Effect.Service<DatajudService>()(
                 HttpClientResponse.schemaBodyJson(DatajudSearchResponse)
               ),
               Effect.scoped,
-              Effect.catchAll((error) =>
-                Match.value(error).pipe(
-                  Match.tags({
-                    RequestError: (e) =>
-                      Effect.fail(
-                        new DatajudNetworkError({
-                          message: `Network error while calling Datajud API: ${e.reason}`,
-                          cause: e,
-                        })
-                      ),
-                    ResponseError: (e) =>
-                      Effect.fail(
-                        new DatajudApiError({
-                          status: e.response.status,
-                          statusText: `HTTP ${e.response.status}`,
-                          details: e.reason,
-                          tribunal: tribunalAlias,
-                        })
-                      ),
-                    ParseError: (e) =>
-                      Effect.fail(
-                        new DatajudValidationError({
-                          message: `Response validation failed: ${e.message}`,
-                          tribunal: tribunalAlias,
-                        })
-                      ),
-                  }),
-                  Match.exhaustive
-                )
-              )
+              Effect.catchTags({
+                RequestError: (e) =>
+                  Effect.fail(
+                    new DatajudNetworkError({
+                      message: `Network error while calling Datajud API: ${e.reason}`,
+                      cause: e,
+                    })
+                  ),
+                ResponseError: (e) =>
+                  Effect.fail(
+                    new DatajudApiError({
+                      status: e.response.status,
+                      statusText: `HTTP ${e.response.status}`,
+                      details: e.reason,
+                      tribunal: tribunalAlias,
+                    })
+                  ),
+                ParseError: (e) =>
+                  Effect.fail(
+                    new DatajudValidationError({
+                      message: `Response validation failed: ${e.message}`,
+                      tribunal: tribunalAlias,
+                    })
+                  ),
+              })
             );
           }),
       };

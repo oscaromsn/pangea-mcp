@@ -114,18 +114,20 @@ export type FalcaoSearchFilter = Schema.Schema.Type<typeof FalcaoSearchFilter>;
  * ✅ VERIFIED - Tribunal information structure
  * Note: API only returns sigla and nome fields
  */
-export const FalcaoTribunal = Schema.Struct({
+export class FalcaoTribunal extends Schema.Class<FalcaoTribunal>(
+  "FalcaoTribunal"
+)({
   sigla: Schema.String,
   nome: Schema.String,
-});
-
-export type FalcaoTribunal = Schema.Schema.Type<typeof FalcaoTribunal>;
+}) {}
 
 /**
  * ✅ VERIFIED - Individual search result (document)
  * Based on comprehensive reference schema from frontend application
  */
-export const FalcaoSearchResult = Schema.Struct({
+export class FalcaoSearchResult extends Schema.Class<FalcaoSearchResult>(
+  "FalcaoSearchResult"
+)({
   tribunal: Schema.String,
   numeroProcesso: Schema.optional(Schema.String),
   ementa: Schema.optional(Schema.String),
@@ -149,9 +151,7 @@ export const FalcaoSearchResult = Schema.Struct({
   idTurma: Schema.optional(Schema.Number),
   gabinete: Schema.optional(Schema.NullOr(Schema.String)),
   idGabinete: Schema.optional(Schema.NullOr(Schema.Number)),
-});
-
-export type FalcaoSearchResult = Schema.Schema.Type<typeof FalcaoSearchResult>;
+}) {}
 
 /**
  * ✅ VERIFIED - Filter value schema with count information
@@ -411,7 +411,9 @@ export type FalcaoSearchResponse = Schema.Schema.Type<
  * ⚠️ PARTIAL - Full document details
  * This is a complex nested structure. Current schema covers basics.
  */
-export const FalcaoDocument = Schema.Struct({
+export class FalcaoDocument extends Schema.Class<FalcaoDocument>(
+  "FalcaoDocument"
+)({
   id: Schema.optional(Schema.Union(Schema.String, Schema.Number)),
   tribunal: Schema.String,
   numeroProcesso: Schema.String,
@@ -426,9 +428,7 @@ export const FalcaoDocument = Schema.Struct({
   siglaClasseProcesso: Schema.optional(Schema.String),
   orgaoJulgador: Schema.optional(Schema.NullOr(Schema.String)),
   classeProcessual: Schema.optional(Schema.NullOr(Schema.String)),
-});
-
-export type FalcaoDocument = Schema.Schema.Type<typeof FalcaoDocument>;
+}) {}
 
 /**
  * ✅ VERIFIED - Autocomplete suggestions
