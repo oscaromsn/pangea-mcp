@@ -1,19 +1,20 @@
 /**
  * Falcao Connector Example - Comprehensive DocumentoTipo Testing
  * Tests all 8 document types to ensure schema robustness across different API response formats
- * 
+ *
  * ⚠️  NOTE: This test makes multiple sequential requests and may trigger API rate limiting (403 Forbidden).
  * The API has aggressive WAF protection. If all tests fail with validation errors, this indicates
  * rate limiting, NOT schema issues. The schema is correct and production-ready.
- * 
+ *
  * For successful testing:
  * - Run this script in isolation (not after other API tests)
  * - Wait 15-30 minutes between runs if you hit rate limits
  * - Consider testing individual document types separately
- * 
+ *
  * Initial test results showed all features working correctly before rate limiting kicked in.
  */
 
+import { BunRuntime } from "@effect/platform-bun";
 import { Effect, Exit } from "effect";
 import {
 	type DocumentoTipo,
@@ -331,33 +332,29 @@ const runComprehensiveTest = Effect.gen(function* () {
 		}
 	}
 
-	return { successful: successful.length, failed: failed.length, total: results.length };
-});
+	return {
+		successful: successful.length,
+		failed: failed.length,
+		total: results.length,
+	};
+}).pipe(
+	// Add custom success validation - exit with error if success rate is below 75%
+	Effect.tap((result) => {
+		console.log(
+			`\n✅ Test suite completed: ${result.successful}/${result.total} passed`,
+		);
 
-const program = runComprehensiveTest.pipe(
-	Effect.provide(FalcaoServiceLive),
-	Effect.catchAll((error) =>
-		Effect.gen(function* () {
-			console.error("\n❌ Test suite error:");
-			console.error(error);
-			return yield* Effect.fail(error);
-		}),
-	),
-);
-
-Effect.runPromiseExit(program).then((exit) => {
-	if (Exit.isFailure(exit)) {
-		console.error("\n❌ Test suite failed to complete:");
-		console.error(exit.cause);
-		process.exit(1);
-	} else {
-		const result = exit.value;
-		console.log(`\n✅ Test suite completed: ${result.successful}/${result.total} passed`);
-
-		// Exit with error code if less than 75% success rate
 		const successRate = (result.successful / result.total) * 100;
 		if (successRate < 75) {
-			process.exit(1);
+			return Effect.fail(
+				new Error(`Low success rate: ${successRate.toFixed(0)}%`),
+			);
 		}
-	}
-});
+		return Effect.void;
+	}),
+);
+
+// Run with BunRuntime.runMain for automatic error handling
+const runnable = runComprehensiveTest.pipe(Effect.provide(FalcaoServiceLive));
+
+BunRuntime.runMain(runnable);

@@ -3,12 +3,13 @@
  * Demonstrates searching for legal precedents using the Effect-TS BNP connector
  */
 
-import { Effect, Exit } from "effect";
+import { BunRuntime } from "@effect/platform-bun";
+import { Effect } from "effect";
 import {
-  BnpService,
-  BnpServiceLive,
-  type Precedent,
-  type PrecedentSearchFilter,
+	BnpService,
+	BnpServiceLive,
+	type Precedent,
+	type PrecedentSearchFilter,
 } from "../src/connectors/bnp/index";
 
 /**
@@ -106,25 +107,8 @@ const runBnpExample = Effect.gen(function* () {
   }
 });
 
-// Run the example with proper error handling
-const program = runBnpExample.pipe(
-  Effect.provide(BnpServiceLive),
-  Effect.catchAll((error) =>
-    Effect.gen(function* () {
-      console.error("\n❌ Error occurred during BNP search:");
-      console.error(error);
-      return yield* Effect.fail(error);
-    }),
-  ),
-);
+// Run the example with BunRuntime.runMain
+// This provides automatic error handling with pretty-printed output
+const runnable = runBnpExample.pipe(Effect.provide(BnpServiceLive));
 
-// Execute the program
-Effect.runPromiseExit(program).then((exit) => {
-  if (Exit.isFailure(exit)) {
-    console.error("\n❌ Program failed:");
-    console.error(exit.cause);
-    process.exit(1);
-  } else {
-    console.log("\n✅ Program completed successfully");
-  }
-});
+BunRuntime.runMain(runnable);
