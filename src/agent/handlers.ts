@@ -71,12 +71,12 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
 
                 return `Found ${response.total} precedents. Top 3:\n\n${summary}`;
               }),
-              // Catch all errors and return formatted error strings
-              Effect.catchAll((error) => {
-                return Effect.succeed(
-                  `Error searching BNP: ${JSON.stringify(error, null, 2)}`
-                );
-              })
+              // Log structured error for debugging, return simple message to LLM
+              Effect.catchAll((error) =>
+                Effect.logError("BNP tool failed", error).pipe(
+                  Effect.as(`Error searching BNP: ${error._tag}`)
+                )
+              )
             );
 
           return result;
@@ -141,11 +141,12 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
 
                 return `Found ${response.quantidadeTotal} documents. Top 3:\n\n${summary}`;
               }),
-              Effect.catchAll((error) => {
-                return Effect.succeed(
-                  `Error searching Falcao: ${JSON.stringify(error, null, 2)}`
-                );
-              })
+              // Log structured error for debugging, return simple message to LLM
+              Effect.catchAll((error) =>
+                Effect.logError("Falcao tool failed", error).pipe(
+                  Effect.as(`Error searching Falcao: ${error._tag}`)
+                )
+              )
             );
 
           return result;
@@ -192,11 +193,14 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
 
                 return `Process Details:\n\n${details}`;
               }),
-              Effect.catchAll((error) => {
-                return Effect.succeed(
-                  `Error retrieving process from Datajud: ${JSON.stringify(error, null, 2)}`
-                );
-              })
+              // Log structured error for debugging, return simple message to LLM
+              Effect.catchAll((error) =>
+                Effect.logError("Datajud tool failed", error).pipe(
+                  Effect.as(
+                    `Error retrieving process from Datajud: ${error._tag}`
+                  )
+                )
+              )
             );
 
           return result;
