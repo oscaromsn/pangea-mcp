@@ -22,42 +22,60 @@ import { LegalToolkit } from "./tools";
 /**
  * Handle streaming events from the LLM
  *
- * Processes different event types and outputs them to the console:
- * - text-delta: Stream the response text
+ * Processes different event types and outputs them to the console using Effect.
+ * This ensures all side effects are properly tracked in the Effect type system.
+ *
+ * Event types:
+ * - text-delta: Stream the response text (without newline)
  * - reasoning-delta: Stream the AI's thinking process
  * - tool-params-start: Show which tool is being called
  * - tool-call: Show tool arguments
  * - tool-result: Show tool results
+ *
+ * @returns Effect that performs console output based on event type
  */
-function handleStreamEvent(event: any): void {
+function handleStreamEvent(event: any): Effect.Effect<void> {
   if (event.type === "text-delta") {
-    process.stdout.write(event.delta);
-  } else if (event.type === "finish") {
-    process.stdout.write("\n");
-  } else if (event.type === "reasoning-start") {
-    process.stdout.write("\n💭 Raciocínio:\n");
-  } else if (event.type === "reasoning-delta") {
-    // Stream the AI's reasoning process
-    process.stdout.write(event.delta);
-  } else if (event.type === "reasoning-end") {
-    process.stdout.write("\n");
-  } else if (event.type === "tool-params-start") {
-    // Show which tool is being called
-    const toolName = event.name;
-    process.stdout.write(`\n🔧 Ferramenta: ${toolName}\n`);
-    process.stdout.write("Argumentos: ");
-  } else if (event.type === "tool-params-delta") {
-    // Stream the tool arguments as they're being built
-    process.stdout.write(event.delta);
-  } else if (event.type === "tool-params-end") {
-    // Arguments complete - add newline
-    process.stdout.write("\n");
-  } else if (event.type === "tool-call") {
-    // Tool execution happens here (arguments already shown)
-  } else if (event.type === "tool-result") {
-    // Show tool result
-    process.stdout.write(`\n📊 Resultado:\n${event.result}\n`);
+    // Stream text without newlines for continuous output
+    return Effect.sync(() => process.stdout.write(event.delta));
   }
+  if (event.type === "finish") {
+    return Console.log("");
+  }
+  if (event.type === "reasoning-start") {
+    return Effect.sync(() => process.stdout.write("\n💭 Raciocínio:\n"));
+  }
+  if (event.type === "reasoning-delta") {
+    // Stream reasoning text without newlines
+    return Effect.sync(() => process.stdout.write(event.delta));
+  }
+  if (event.type === "reasoning-end") {
+    return Console.log("");
+  }
+  if (event.type === "tool-params-start") {
+    return Effect.gen(function* () {
+      yield* Effect.sync(() =>
+        process.stdout.write(`\n🔧 Ferramenta: ${event.name}\n`)
+      );
+      yield* Effect.sync(() => process.stdout.write("Argumentos: "));
+    });
+  }
+  if (event.type === "tool-params-delta") {
+    // Stream tool arguments without newlines
+    return Effect.sync(() => process.stdout.write(event.delta));
+  }
+  if (event.type === "tool-params-end") {
+    return Console.log("");
+  }
+  if (event.type === "tool-call") {
+    // Tool execution happens here (arguments already shown)
+    return Effect.void;
+  }
+  if (event.type === "tool-result") {
+    return Console.log(`\n📊 Resultado:\n${event.result}`);
+  }
+  // Default: no output for unknown event types
+  return Effect.void;
 }
 
 /**
@@ -105,7 +123,7 @@ const main = Effect.gen(function* () {
         toolkit: LegalToolkit,
       })
       .pipe(
-        Stream.tap((event) => Effect.sync(() => handleStreamEvent(event))),
+        Stream.tap((event) => handleStreamEvent(event)),
         // Accumulate response data to check for tool calls
         Stream.runFold(
           { text: "", toolCalls: [] as Array<any> },
@@ -129,7 +147,7 @@ const main = Effect.gen(function* () {
           toolkit: LegalToolkit,
         })
         .pipe(
-          Stream.tap((event) => Effect.sync(() => handleStreamEvent(event))),
+          Stream.tap((event) => handleStreamEvent(event)),
           Stream.runFold(
             { text: "", toolCalls: [] as Array<any> },
             (acc, event) => {
@@ -144,7 +162,7 @@ const main = Effect.gen(function* () {
         );
     }
 
-    process.stdout.write("\n");
+    yield* Console.log("");
   }
 });
 
