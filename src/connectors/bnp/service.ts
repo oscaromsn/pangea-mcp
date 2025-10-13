@@ -43,19 +43,9 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
         Effect.gen(function* () {
           const url = `${BNP_BASE_URL}precedentes`;
 
-          // Apply default values
-          const validatedFilter = {
-            buscaGeral: filter.buscaGeral ?? "",
-            cancelados: filter.cancelados ?? false,
-            ordenacao: filter.ordenacao ?? ("Textual" as const),
-            orgaos: filter.orgaos ?? [],
-            pagina: filter.pagina ?? 1,
-            tipos: filter.tipos ?? [],
-            todasPalavras: filter.todasPalavras,
-            quaisquerPalavras: filter.quaisquerPalavras,
-            semPalavras: filter.semPalavras,
-            trechoExato: filter.trechoExato,
-          };
+          // Use the schema constructor to apply defaults automatically
+          // This delegates default value handling to the schema layer where it's defined
+          const validatedFilter = PrecedentSearchFilter.make(filter);
           const requestBody: PrecedentSearchBody = {
             filtro: validatedFilter,
           };
