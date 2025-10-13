@@ -1,31 +1,22 @@
 #!/usr/bin/env bun
 
 /**
- * Entry point for the Pangea MCP Server
+ * Entry point for the Pangea MCP Server - Effect-Native Implementation
  *
- * This file serves as the main entry point for the TypeScript implementation
- * of the Pangea jurisprudence search MCP server.
+ * This is the main entry point for the Effect-native MCP server.
+ * It uses the modern Effect architecture with proper dependency injection,
+ * type safety, and the Model Context Protocol (MCP) for LLM integration.
+ *
+ * Run with: bun src/index.ts
  */
 
-import { main } from "./server";
+import { BunRuntime } from "@effect/platform-bun";
+import { program } from "./mcp/server";
 
-// Handle uncaught errors
-process.on("uncaughtException", (error) => {
-  console.error("Uncaught exception:", error);
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled rejection at:", promise, "reason:", reason);
-  process.exit(1);
-});
-
-// Start the server
-if (import.meta.main) {
-  try {
-    await main();
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
+/**
+ * Entry Point
+ *
+ * Execute the MCP server program using the Bun runtime.
+ * The server will run indefinitely, processing MCP requests via stdio.
+ */
+BunRuntime.runMain(program);
