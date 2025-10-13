@@ -4,6 +4,7 @@
  */
 
 import {
+  FetchHttpClient,
   HttpBody,
   HttpClient,
   HttpClientRequest,
@@ -23,9 +24,12 @@ import {
  *
  * This service provides access to the BNP (Banco Nacional de Precedentes) API
  * for retrieving legal precedents from Brazilian courts.
+ *
+ * Uses the dependencies + scoped pattern to properly erase HttpClient from the R channel
  */
 export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
-  effect: Effect.gen(function* () {
+  dependencies: [FetchHttpClient.layer],
+  scoped: Effect.gen(function* () {
     const httpClient = yield* HttpClient.HttpClient;
 
     return {
@@ -78,10 +82,15 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
             HttpClientRequest.setBody(HttpBody.unsafeJson(requestBody))
           );
 
-          // Execute request and handle response with proper error mapping
+          // Execute request and let HttpClient handle all HTTP-level errors naturally
+          // Filter for OK status before parsing body, then transform errors to domain-specific errors
           return yield* httpClient.execute(request).pipe(
-            Effect.flatMap(
-              HttpClientResponse.schemaBodyJson(BnpSearchResponse)
+            Effect.flatMap((response) =>
+              HttpClientResponse.filterStatusOk(response).pipe(
+                Effect.flatMap(
+                  HttpClientResponse.schemaBodyJson(BnpSearchResponse)
+                )
+              )
             ),
             Effect.scoped,
             Effect.catchAll((error) =>
@@ -109,7 +118,7 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
                       })
                     ),
                 }),
-                Match.exhaustive
+                Match.orElse(() => Effect.fail(error))
               )
             )
           );
