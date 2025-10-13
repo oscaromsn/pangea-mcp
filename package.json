@@ -30,7 +30,7 @@
     "typescript": "^5.8.3"
   },
   "bin": {
-    "server": "src/server.ts"
+    "pangea-mcp": "src/index.ts"
   },
   "description": "TypeScript MCP server for searching Brazilian jurisprudence using the Pangea legal database",
   "engines": {
@@ -59,6 +59,5 @@
     "test": "bunx vitest",
     "test:coverage": "bunx vitest --coverage"
   },
-  "type": "module",
-  "types": "types/index.ts"
+  "type": "module"
 }
