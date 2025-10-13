@@ -9,7 +9,10 @@ import { FalcaoService } from "./service";
 
 /**
  * Live implementation of FalcaoService with HttpClient dependency
- * Following the "Local Dependency Erasure" pattern by providing the FetchHttpClient locally
+ *
+ * This layer wraps FalcaoService.Default and provides FetchHttpClient.layer to erase
+ * the HttpClient dependency from the public API. This is the "Local Dependency Erasure"
+ * pattern - the service layer handles its own dependencies so consumers don't need to.
  */
 export const FalcaoServiceLive = FalcaoService.Default.pipe(
   Layer.provide(FetchHttpClient.layer)
