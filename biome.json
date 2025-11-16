@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -140,7 +140,8 @@
         "noBlankTarget": "error"
       },
       "style": {
-        "recommended": false
+        "recommended": true,
+        "noNonNullAssertion": "warn"
       },
       "suspicious": {
         "recommended": true,
