@@ -7,6 +7,14 @@ import { Schema } from "effect";
 
 /**
  * Precedent Search Filter - Input parameters for precedent search
+ *
+ * CRITICAL API CONSTRAINT:
+ * The BNP API requires BOTH of the following to be non-empty:
+ * - A non-empty `orgaos` array (court filters)
+ * - A non-empty `tipos` array (precedent type filters)
+ *
+ * Searches with only one filter (or neither) will fail with HTTP 400.
+ * This constraint is validated in the service layer after defaults are applied.
  */
 export const PrecedentSearchFilter = Schema.Struct({
   // Fields with defaults
@@ -31,6 +39,7 @@ export const PrecedentSearchFilter = Schema.Struct({
   pagina: Schema.optional(Schema.Int.pipe(Schema.positive())).pipe(
     Schema.withConstructorDefault(() => 1)
   ),
+  // Note: The BNP API does not support a page size parameter - it always returns 10 results per page
   tipos: Schema.optional(Schema.Array(Schema.String)).pipe(
     Schema.withConstructorDefault(() => [])
   ),
@@ -64,7 +73,7 @@ export const Precedent = Schema.Struct({
   orgao: Schema.String,
   tipo: Schema.String,
   nr: Schema.Number,
-  questao: Schema.String,
+  questao: Schema.optional(Schema.String),
   tese: Schema.optional(Schema.NullOr(Schema.String)),
   situacao: Schema.String,
   ultimaAtualizacao: Schema.optional(Schema.String),
