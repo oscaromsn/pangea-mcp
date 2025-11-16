@@ -77,7 +77,7 @@ const runBnpExample = Effect.gen(function* () {
       console.log(`   Court: ${precedent.orgao}`);
       console.log(`   Status: ${precedent.situacao}`);
       console.log(
-        `   Question: ${precedent.questao.substring(0, 100)}${precedent.questao.length > 100 ? "..." : ""}`,
+        `   Question: ${precedent.questao?.substring(0, 100) ?? "N/A"}${(precedent.questao?.length ?? 0) > 100 ? "..." : ""}`,
       );
 
       if (precedent.tese) {

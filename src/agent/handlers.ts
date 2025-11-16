@@ -62,7 +62,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
                     const title = `${precedent.tipo} ${precedent.nr} from ${precedent.orgao}`;
                     const thesis = precedent.tese
                       ? precedent.tese.substring(0, 150)
-                      : precedent.questao.substring(0, 150);
+                      : (precedent.questao?.substring(0, 150) ?? "N/A");
                     const status = precedent.situacao;
 
                     return `${idx + 1}. [${title}]\n   Thesis: ${thesis}...\n   Status: ${status}`;

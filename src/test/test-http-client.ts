@@ -5,7 +5,7 @@
  * This ensures compatibility with Effect's HTTP client implementation.
  */
 
-import { FetchHttpClient, HttpClient } from "@effect/platform";
+import { FetchHttpClient, type HttpClient } from "@effect/platform";
 import { Layer } from "effect";
 
 /**

@@ -6,10 +6,8 @@
  */
 
 import { McpServer } from "@effect/ai";
-import { FetchHttpClient } from "@effect/platform";
 import { BunSink, BunStream } from "@effect/platform-bun";
 import { Layer, Logger } from "effect";
-import { BnpServiceLive } from "../connectors/bnp";
 import { SessionService } from "../services/session-service";
 import { PangeaToolHandlersLive } from "./handlers";
 import { PangeaToolkit } from "./tools";
@@ -47,14 +45,12 @@ export const PangeaMcpServerLayer = PangeaToolkitLayer.pipe(
  *
  * Composes all application dependencies in the correct order.
  * Uses local dependency erasure pattern - services provide their own dependencies.
+ *
+ * Note: BnpServiceLive is provided by handlers, so it's not needed here.
  */
 export const ApplicationLayer = Layer.mergeAll(
   PangeaMcpServerLayer,
-  SessionService.Default,
-  BnpServiceLive
-).pipe(
-  // Provide FetchHttpClient at the top level
-  Layer.provide(FetchHttpClient.layer)
+  SessionService.Default
 );
 
 /**
@@ -62,5 +58,8 @@ export const ApplicationLayer = Layer.mergeAll(
  *
  * Launches the MCP server and keeps it running.
  * This returns an Effect that will be executed by BunRuntime.runMain.
+ *
+ * Note: Do NOT use Effect.log here - it writes to stdout and corrupts the MCP JSON-RPC protocol.
+ * Use console.error for startup diagnostics (writes to stderr).
  */
 export const program = Layer.launch(ApplicationLayer);
