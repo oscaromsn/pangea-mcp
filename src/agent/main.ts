@@ -96,7 +96,7 @@ const main = Effect.gen(function* () {
   // Welcome message
   yield* Console.log("\n=== Juris - Brazilian Legal Research Assistant ===\n");
   yield* Console.log(
-    'Type your legal research questions in natural language, or "exit" to quit.\n'
+    'Olá - o que vamos pesquisar hoje? Caso queira sair, digite "exit".\n'
   );
 
   // Start the interactive loop - runs forever until user types "exit"
@@ -106,7 +106,7 @@ const main = Effect.gen(function* () {
 
     // Check for exit command
     if (userInput.toLowerCase() === "exit") {
-      yield* Console.log("\nGoodbye! Thank you for using Juris.\n");
+      yield* Console.log("\nAté mais!.\n");
       break;
     }
 
