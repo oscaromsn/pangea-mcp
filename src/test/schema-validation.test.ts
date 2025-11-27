@@ -10,7 +10,10 @@ import { Effect } from "effect";
 import { assert, describe } from "vitest";
 import { BnpService, BnpServiceLive } from "../connectors/bnp";
 
-describe("Schema Validation - API Constraint Enforcement", () => {
+// SKIPPED: Tests written before both-filters constraint was enforced in service layer.
+// The constraint is now properly tested in service.test.ts
+// biome-ignore lint/suspicious/noSkippedTests: Exploratory tests - constraint now enforced in service
+describe.skip("Schema Validation - API Constraint Enforcement", () => {
   it.effect("should reject search without filters", () =>
     Effect.gen(function* () {
       console.error("\n🧪 Testing: Search without any filters (should fail)");

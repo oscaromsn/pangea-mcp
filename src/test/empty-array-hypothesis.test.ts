@@ -10,7 +10,10 @@ import { Effect } from "effect";
 import { assert, describe } from "vitest";
 import { BnpService, BnpServiceLive } from "../connectors/bnp";
 
-describe("Empty Array Hypothesis - BNP API Behavior", () => {
+// SKIPPED: Hypothesis test completed - confirmed that both orgaos AND tipos required.
+// Constraint is now enforced in service layer and tested in service.test.ts
+// biome-ignore lint/suspicious/noSkippedTests: Exploratory tests - constraint now enforced in service
+describe.skip("Empty Array Hypothesis - BNP API Behavior", () => {
   it.effect("should test if API accepts empty arrays", () =>
     Effect.gen(function* () {
       console.error("\n🧪 === EMPTY ARRAY HYPOTHESIS ===");

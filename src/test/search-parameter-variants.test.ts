@@ -10,7 +10,10 @@ import { Effect } from "effect";
 import { assert, describe } from "vitest";
 import { BnpService, BnpServiceLive } from "../connectors/bnp";
 
-describe("Search Parameter Variants - BNP API Acceptance", () => {
+// SKIPPED: Exploratory tests for API parameter investigation.
+// The API constraint (both orgaos AND tipos required) is now enforced in service layer.
+// biome-ignore lint/suspicious/noSkippedTests: Exploratory tests - constraint now enforced in service
+describe.skip("Search Parameter Variants - BNP API Acceptance", () => {
   it.effect("should test buscaGeral alone", () =>
     Effect.gen(function* () {
       console.error("\n1️⃣  Testing: buscaGeral only");
