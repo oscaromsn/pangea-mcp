@@ -82,7 +82,7 @@ export const Precedent = Schema.Struct({
     Schema.Array(
       Schema.Struct({
         numero: Schema.String,
-        link: Schema.String,
+        link: Schema.optional(Schema.String),
       })
     )
   ),
