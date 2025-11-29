@@ -85,20 +85,23 @@ describe("LegalToolHandlers - Live API Integration", () => {
   });
 
   describe("getDatajudProcess", () => {
-    it.effect("should return process details from Datajud API", () =>
-      Effect.gen(function* () {
-        const toolkit = yield* LegalToolkit;
-        // Use a known valid process number
-        const { result } = yield* toolkit.handle("getDatajudProcess", {
-          processNumber: "0722391-40.2017.8.07.0001",
-        });
+    it.effect(
+      "should return process details from Datajud API",
+      () =>
+        Effect.gen(function* () {
+          const toolkit = yield* LegalToolkit;
+          // Use a known valid process number
+          const { result } = yield* toolkit.handle("getDatajudProcess", {
+            processNumber: "0722391-40.2017.8.07.0001",
+          });
 
-        assert.isString(result);
-        assert.isTrue(result.length > 0);
-      }).pipe(
-        Effect.provide(LegalToolHandlersLive),
-        Effect.timeout("30 seconds")
-      )
+          assert.isString(result);
+          assert.isTrue(result.length > 0);
+        }).pipe(
+          Effect.provide(LegalToolHandlersLive),
+          Effect.timeout("30 seconds")
+        ),
+      { timeout: 35000 }
     );
 
     it.effect("should handle invalid process number gracefully", () =>
@@ -215,17 +218,25 @@ describe("LegalToolHandlers - Live API Integration", () => {
       () =>
         Effect.gen(function* () {
           const toolkit = yield* LegalToolkit;
+          // Use STJ (Superior Tribunal de Justiça) - fast response (~2.5s)
+          // Note: tjdft is valid, tjdf is NOT (common mistake)
           const { result } = yield* toolkit.handle("searchDatajudAdvanced", {
-            tribunal: "tjsp",
+            tribunal: "stj",
             size: 5,
           });
 
           assert.isString(result);
           assert.isTrue(result.length > 0);
+          // Verify it's a successful search, not an error message
+          assert.isTrue(
+            result.includes("Found") || result.includes("processes"),
+            "Expected successful search result, not error message"
+          );
         }).pipe(
           Effect.provide(LegalToolHandlersLive),
           Effect.timeout("30 seconds")
-        )
+        ),
+      { timeout: 35000 }
     );
 
     it.effect("should handle invalid tribunal alias gracefully", () =>
