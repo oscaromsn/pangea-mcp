@@ -133,10 +133,13 @@ export class FalcaoSearchResult extends Schema.Class<FalcaoSearchResult>(
   ementa: Schema.optional(Schema.String),
   textoAcordao: Schema.optional(Schema.String),
   relator: Schema.optional(Schema.String),
-  dataJulgamento: Schema.optional(Schema.String),
+  dataJulgamento: Schema.optional(Schema.NullOr(Schema.String)),
   classeProcesso: Schema.optional(Schema.String),
   siglaClasseProcesso: Schema.optional(Schema.String),
-  referenciaLegislativa: Schema.optional(Schema.Array(Schema.String)),
+  // API can return either a string or array of strings
+  referenciaLegislativa: Schema.optional(
+    Schema.NullOr(Schema.Union(Schema.String, Schema.Array(Schema.String)))
+  ),
   dataJuntada: Schema.optional(Schema.String),
   id: Schema.optional(Schema.Union(Schema.String, Schema.Number)),
   tituloDecisao: Schema.optional(Schema.String),
@@ -211,10 +214,11 @@ export type ProcessoParadigma = Schema.Schema.Type<typeof ProcessoParadigma>;
 
 /**
  * ✅ VERIFIED - Top legal themes (variant 1)
+ * Note: tese may be missing entirely in some API responses
  */
 const TemaTopFiveVariant1 = Schema.Struct({
   origemDocumentos: Schema.String,
-  tese: Schema.NullOr(Schema.String),
+  tese: Schema.optional(Schema.NullOr(Schema.String)),
   tribunal: Schema.String,
   descricaoTribunal: Schema.String,
   situacao: Situacao,
@@ -238,10 +242,11 @@ const TemaTopFiveVariant1 = Schema.Struct({
 
 /**
  * ✅ VERIFIED - Top legal themes (variant 2)
+ * Note: tese may be missing entirely in some API responses
  */
 const TemaTopFiveVariant2 = Schema.Struct({
   origemDocumentos: Schema.String,
-  tese: Schema.NullOr(Schema.String),
+  tese: Schema.optional(Schema.NullOr(Schema.String)),
   tribunal: Schema.String,
   descricaoTribunal: Schema.String,
   situacao: Situacao,
@@ -261,10 +266,15 @@ const TemaTopFiveVariant2 = Schema.Struct({
 
 /**
  * ✅ VERIFIED - Union of top theme variants
+ * Note: The API returns various structures for temasTopFive depending on document type
+ * and search context. Using a flexible union that falls back to unknown record for
+ * unrecognized structures. This data is not used by the MCP handler.
  */
 export const TemaTopFive = Schema.Union(
   TemaTopFiveVariant1,
-  TemaTopFiveVariant2
+  TemaTopFiveVariant2,
+  // Fallback for other structures returned by API (not used by MCP handler)
+  Schema.Record({ key: Schema.String, value: Schema.Unknown })
 );
 
 export type TemaTopFive = Schema.Schema.Type<typeof TemaTopFive>;
@@ -329,8 +339,9 @@ export const FalcaoPrecedenteDocument = Schema.Struct({
   processosParadigma: Schema.optional(
     Schema.NullOr(Schema.Array(ProcessoParadigma))
   ),
+  // API can return either a string or array of strings
   referenciaLegislativa: Schema.optional(
-    Schema.NullOr(Schema.Array(Schema.String))
+    Schema.NullOr(Schema.Union(Schema.String, Schema.Array(Schema.String)))
   ),
 
   // Decision details - mostly optional, can be null
@@ -399,7 +410,7 @@ export const FalcaoSearchResponse = Schema.Struct({
   totalPaginas: Schema.optional(Schema.Number),
   paginaAtual: Schema.optional(Schema.Number),
   filtrosDisponiveis: Schema.optional(Schema.Array(FiltroDisponivel)),
-  temasTopFive: Schema.optional(Schema.Array(TemaTopFive)),
+  temasTopFive: Schema.optional(Schema.NullOr(Schema.Array(TemaTopFive))),
   tempoResposta: Schema.optional(Schema.Number),
 });
 
