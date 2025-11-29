@@ -16,7 +16,7 @@ import { Schema } from "effect";
 export class PangeaToolkit extends Toolkit.make(
   Tool.make("search_jurisprudence", {
     description:
-      "Search Brazilian legal precedents using flexible text queries and boolean operators. CRITICAL REQUIREMENT: BOTH 'orgaos' (courts) AND 'tipos' (precedent types) filters MUST be provided with non-empty values. Searches with only one filter will fail.",
+      "Search Brazilian legal precedents using flexible text queries and boolean operators. If courts/types are not specified, sensible defaults (STF, STJ, TST for courts; SUM, SV, RG, IRR, RR for types) are applied automatically.",
     success: Schema.String,
     failure: Schema.Never,
     parameters: {
@@ -37,11 +37,11 @@ export class PangeaToolkit extends Toolkit.make(
       }),
       orgaos: Schema.optional(Schema.Array(Schema.String)).annotations({
         description:
-          "Filter by court codes (e.g., ['STF', 'STJ']). REQUIRED: MUST be provided along with 'tipos'.",
+          "Filter by court codes (e.g., ['STF', 'STJ']). Optional - defaults to ['STF', 'STJ', 'TST'] if not provided.",
       }),
       tipos: Schema.optional(Schema.Array(Schema.String)).annotations({
         description:
-          "Filter by precedent type codes (e.g., ['SUM', 'RG']). REQUIRED: MUST be provided along with 'orgaos'.",
+          "Filter by precedent type codes (e.g., ['SUM', 'RG']). Optional - defaults to ['SUM', 'SV', 'RG', 'IRR', 'RR'] if not provided.",
       }),
       pagina: Schema.optional(Schema.Int.pipe(Schema.positive())).annotations({
         description: "Page number (default: 1)",
@@ -146,6 +146,43 @@ export class PangeaToolkit extends Toolkit.make(
     parameters: {
       results: Schema.Unknown.annotations({
         description: "Complete search results to analyze",
+      }),
+    },
+  }),
+  Tool.make("get_process_details", {
+    description:
+      "Get detailed metadata for a Brazilian judicial process by its CNJ number. Automatically infers the correct tribunal from the process number format.",
+    success: Schema.String,
+    failure: Schema.Never,
+    parameters: {
+      process_number: Schema.String.annotations({
+        description:
+          "CNJ process number (20 digits). Format: NNNNNNN-DD.AAAA.J.TR.OOOO or unformatted 20-digit string.",
+      }),
+    },
+  }),
+  Tool.make("search_labor_jurisprudence", {
+    description:
+      "Search Brazilian labor court decisions (Justiça do Trabalho). Covers TST and all TRTs. Returns court decisions (acordãos), sentences, and precedents.",
+    success: Schema.String,
+    failure: Schema.Never,
+    parameters: {
+      query: Schema.String.annotations({
+        description: "Search text (e.g., 'gerente bancário horas extras')",
+      }),
+      document_type: Schema.optional(
+        Schema.Literal(
+          "acordaos",
+          "precedentes",
+          "sentencas",
+          "decisoesmonocraticas"
+        )
+      ).annotations({
+        description:
+          "Type of document to search. Defaults to 'acordaos' (court decisions).",
+      }),
+      page: Schema.optional(Schema.Int.pipe(Schema.nonNegative())).annotations({
+        description: "Page number (0-indexed). Defaults to 0.",
       }),
     },
   })

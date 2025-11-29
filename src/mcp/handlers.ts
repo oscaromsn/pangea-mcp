@@ -9,46 +9,46 @@
 
 import { Effect, Layer } from "effect";
 import { BnpService, BnpServiceLive } from "../connectors/bnp";
+import { DatajudService, DatajudServiceLive } from "../connectors/datajud";
+import { FalcaoService, FalcaoServiceLive } from "../connectors/falcao";
 import { SessionService } from "../services/session-service";
+import {
+  COURT_CODES,
+  DEFAULT_COURTS,
+  DEFAULT_TYPES,
+  PRECEDENT_TYPES,
+} from "./constants";
+import { formatBnpResults, stripHtml } from "./formatting";
 import { PangeaToolkit } from "./tools";
 
-/**
- * Court codes organized by hierarchy
- */
-const COURT_CODES = {
-  SUPREME_COURTS: {
-    STF: "Supremo Tribunal Federal",
-    STJ: "Superior Tribunal de Justiça",
-    TST: "Tribunal Superior do Trabalho",
-    STM: "Superior Tribunal Militar",
-  },
-  FEDERAL_COURTS: {
-    TNU: "Turma Nacional de Uniformização",
-    TRF01: "TRF 1ª Região",
-    TRF02: "TRF 2ª Região",
-    TRF03: "TRF 3ª Região",
-    TRF04: "TRF 4ª Região",
-    TRF05: "TRF 5ª Região",
-    TRF06: "TRF 6ª Região",
-  },
-  // Add more court categories as needed
-};
+// COURT_CODES, PRECEDENT_TYPES, DEFAULT_COURTS, DEFAULT_TYPES imported from ./constants
 
 /**
- * Precedent type definitions
+ * Error hints for agent self-correction
+ * Provides actionable guidance to help agents recover from errors
  */
-const PRECEDENT_TYPES = {
-  SUM: "Súmula",
-  SV: "Súmula Vinculante",
-  RG: "Repercussão Geral",
-  IAC: "Incidente de Assunção de Competência",
-  IRDR: "Incidente de Resolução de Demandas Repetitivas",
-  RR: "Recursos Repetitivos",
+const ERROR_HINTS: Record<string, string> = {
+  DatajudValidationError:
+    "Process number must be exactly 20 digits. Format: NNNNNNN-DD.AAAA.J.TR.OOOO or unformatted.",
+  DatajudApiError:
+    "Check if the process number format is correct and the tribunal is supported.",
+  BnpValidationError:
+    "Ensure both 'orgaos' and 'tipos' are provided. Use get_available_courts and get_precedent_types tools for valid codes.",
+  BnpApiError:
+    "The BNP API returned an error. Try simplifying your search query or reducing filters.",
+  FalcaoValidationError:
+    "Check search parameters. Use valid document_type: 'acordaos', 'precedentes', 'sentencas', or 'decisoesmonocraticas'.",
+  FalcaoApiError:
+    "The Falcão API returned an error. Try a different search query or check tribunal availability.",
+  InvalidProcessNumberFormatError:
+    "Process number format is invalid. Expected 20 digits: NNNNNNN-DD.AAAA.J.TR.OOOO",
+  UnsupportedTribunalError:
+    "This tribunal is not supported by DataJud. Use a supported tribunal alias.",
 };
 
 /**
  * Helper function to format errors for MCP tool responses
- * Extracts appropriate error message based on error type
+ * Extracts appropriate error message based on error type and adds hints for agent self-correction
  */
 function formatError(error: unknown, context: string): string {
   // Log full error to stderr for debugging
@@ -56,9 +56,11 @@ function formatError(error: unknown, context: string): string {
 
   let errorMessage = "Unknown error";
   let errorTag = "UnknownError";
+  let hint: string | undefined;
 
   if (typeof error === "object" && error !== null && "_tag" in error) {
     errorTag = String((error as { _tag: unknown })._tag);
+    hint = ERROR_HINTS[errorTag];
 
     // Handle BnpApiError specially (has status, statusText, details)
     if (
@@ -70,6 +72,21 @@ function formatError(error: unknown, context: string): string {
       const statusText = (error as { statusText: unknown }).statusText;
       const details = (error as { details: unknown }).details;
       errorMessage = `API Error: ${statusText} - ${details}`;
+    }
+    // Handle DatajudApiError (has status, tribunal)
+    else if (
+      errorTag === "DatajudApiError" &&
+      "status" in error &&
+      "tribunal" in error
+    ) {
+      const status = (error as { status: unknown }).status;
+      const tribunal = (error as { tribunal: unknown }).tribunal;
+      errorMessage = `DataJud API Error (${tribunal}): HTTP ${status}`;
+    }
+    // Handle FalcaoApiError (has status)
+    else if (errorTag === "FalcaoApiError" && "status" in error) {
+      const status = (error as { status: unknown }).status;
+      errorMessage = `Falcão API Error: HTTP ${status}`;
     }
     // Handle BnpValidationError (filter validation failures)
     else if (errorTag === "BnpValidationError") {
@@ -100,6 +117,7 @@ function formatError(error: unknown, context: string): string {
       success: false,
       error: errorTag,
       message: errorMessage,
+      ...(hint && { hint }),
     },
     null,
     2
@@ -115,6 +133,8 @@ function formatError(error: unknown, context: string): string {
 export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
   Effect.gen(function* () {
     const bnpService = yield* BnpService;
+    const datajudService = yield* DatajudService;
+    const falcaoService = yield* FalcaoService;
     const sessionService = yield* SessionService;
 
     return {
@@ -133,6 +153,17 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
         readonly tipos?: readonly string[] | undefined;
       }) =>
         Effect.gen(function* () {
+          // Apply smart defaults when not provided
+          const effectiveOrgaos =
+            params.orgaos && params.orgaos.length > 0
+              ? [...params.orgaos]
+              : [...DEFAULT_COURTS];
+
+          const effectiveTipos =
+            params.tipos && params.tipos.length > 0
+              ? [...params.tipos]
+              : [...DEFAULT_TYPES];
+
           const serviceParams = {
             buscaGeral: params.busca_geral,
             todasPalavras: params.todas_palavras,
@@ -140,9 +171,8 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             semPalavras: params.sem_palavras,
             trechoExato: params.trecho_exato,
             pagina: params.pagina,
-            orgaos: params.orgaos ? [...params.orgaos] : undefined,
-            tipos: params.tipos ? [...params.tipos] : undefined,
-            // Note: tamanho_pagina is accepted from MCP but not sent to API (API always returns 10 results)
+            orgaos: effectiveOrgaos,
+            tipos: effectiveTipos,
           };
 
           const result = yield* bnpService.searchPrecedents(serviceParams);
@@ -150,17 +180,23 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
           // Add to search history
           yield* sessionService.addToHistory(params, result.total);
 
-          // Format and return response
+          // Format and return response with cleaned/flattened results
           return JSON.stringify(
             {
               success: true,
               total: result.total,
               page: params.pagina ?? 1,
-              page_size: params.tamanho_pagina ?? 10,
-              results: result.resultados,
+              page_size: 10, // API always returns 10 results
+              results: formatBnpResults(result.resultados),
               aggregations: {
-                especies: result.aggsEspecies,
-                orgaos: result.aggsOrgaos,
+                types: result.aggsEspecies.map((a) => ({
+                  code: a.tipo,
+                  count: a.total,
+                })),
+                courts: result.aggsOrgaos.map((a) => ({
+                  code: a.tipo,
+                  count: a.total,
+                })),
               },
             },
             null,
@@ -329,9 +365,121 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }),
+
+      /**
+       * Get process details handler (DataJud)
+       */
+      get_process_details: (params: { readonly process_number: string }) =>
+        Effect.gen(function* () {
+          const result = yield* datajudService.searchProcessMetadata(
+            params.process_number
+          );
+
+          // Format response for agent consumption
+          const hits = result.hits.hits;
+          const firstHit = hits[0];
+          if (!firstHit) {
+            return JSON.stringify({
+              success: true,
+              found: false,
+              message: "No process found with that number",
+            });
+          }
+
+          const process = firstHit._source;
+          // Normalize assuntos - array of (single object | array of objects)
+          const subjectsList = (process.assuntos ?? []).flatMap((item) => {
+            // Check if item is an array by checking for 'length' property
+            if ("length" in item) {
+              return (item as ReadonlyArray<{ nome: string }>).map(
+                (a) => a.nome
+              );
+            }
+            return [item.nome];
+          });
+
+          return JSON.stringify(
+            {
+              success: true,
+              found: true,
+              process: {
+                number: process.numeroProcesso,
+                tribunal: process.tribunal,
+                court: process.orgaoJulgador?.nome,
+                class: process.classe?.nome,
+                subjects: subjectsList,
+                filingDate: process.dataAjuizamento,
+                degree: process.grau,
+                system: process.sistema?.nome,
+              },
+            },
+            null,
+            2
+          );
+        }).pipe(
+          Effect.catchAll((error) =>
+            Effect.succeed(formatError(error, "get_process_details"))
+          )
+        ),
+
+      /**
+       * Search labor jurisprudence handler (Falcão)
+       */
+      search_labor_jurisprudence: (params: {
+        readonly query: string;
+        readonly document_type?:
+          | "acordaos"
+          | "precedentes"
+          | "sentencas"
+          | "decisoesmonocraticas"
+          | undefined;
+        readonly page?: number | undefined;
+      }) =>
+        Effect.gen(function* () {
+          const result = yield* falcaoService.search({
+            texto: params.query,
+            colecao: params.document_type ?? "acordaos",
+            page: params.page ?? 0,
+            size: 10,
+          });
+
+          // Format response for agent consumption
+          return JSON.stringify(
+            {
+              success: true,
+              total: result.quantidadeTotal,
+              page: params.page ?? 0,
+              results: result.documentos.map((doc) => ({
+                id: "id" in doc ? doc.id : undefined,
+                tribunal: doc.tribunal,
+                process_number:
+                  "numeroProcesso" in doc ? doc.numeroProcesso : undefined,
+                rapporteur: "relator" in doc ? doc.relator : undefined,
+                summary:
+                  "ementa" in doc ? stripHtml(doc.ementa as string) : undefined,
+                judgment_date:
+                  "dataJulgamento" in doc ? doc.dataJulgamento : undefined,
+                class: "classeProcesso" in doc ? doc.classeProcesso : undefined,
+              })),
+            },
+            null,
+            2
+          );
+        }).pipe(
+          Effect.catchAll((error) =>
+            Effect.succeed(formatError(error, "search_labor_jurisprudence"))
+          )
+        ),
     };
   })
 ).pipe(
   // Provide service dependencies
-  Layer.provide(Layer.mergeAll(BnpServiceLive, SessionService.Default))
+  Layer.provide(
+    Layer.mergeAll(
+      BnpServiceLive,
+      DatajudServiceLive,
+      FalcaoServiceLive,
+      SessionService.Default
+    )
+  )
 );

@@ -7,8 +7,9 @@
 
 import { McpServer } from "@effect/ai";
 import { BunSink, BunStream } from "@effect/platform-bun";
-import { Layer, Logger } from "effect";
+import { Effect, Layer, Logger } from "effect";
 import { SessionService } from "../services/session-service";
+import { COURT_CODES, PRECEDENT_TYPES } from "./constants";
 import { PangeaToolHandlersLive } from "./handlers";
 import { PangeaToolkit } from "./tools";
 
@@ -22,11 +23,44 @@ const PangeaToolkitLayer = McpServer.toolkit(PangeaToolkit).pipe(
 );
 
 /**
+ * MCP Resources Layer
+ * Exposes static reference data as MCP resources for agents to read
+ */
+const CourtsResourceLayer = McpServer.resource({
+  uri: "pangea://reference/courts",
+  name: "Court Codes",
+  description:
+    "Brazilian court codes organized by hierarchy for use in search filters",
+  mimeType: "application/json",
+  content: Effect.succeed(JSON.stringify(COURT_CODES, null, 2)),
+});
+
+const TypesResourceLayer = McpServer.resource({
+  uri: "pangea://reference/types",
+  name: "Precedent Types",
+  description:
+    "Precedent type codes with descriptions for use in search filters",
+  mimeType: "application/json",
+  content: Effect.succeed(JSON.stringify(PRECEDENT_TYPES, null, 2)),
+});
+
+/**
+ * Combined Resources Layer
+ */
+const PangeaResourcesLayer = Layer.mergeAll(
+  CourtsResourceLayer,
+  TypesResourceLayer
+);
+
+/**
  * MCP Server Layer
  *
- * Creates the MCP server with stdio transport and registers the toolkit.
+ * Creates the MCP server with stdio transport and registers the toolkit and resources.
  */
-export const PangeaMcpServerLayer = PangeaToolkitLayer.pipe(
+export const PangeaMcpServerLayer = Layer.mergeAll(
+  PangeaToolkitLayer,
+  PangeaResourcesLayer
+).pipe(
   // Provide MCP server with stdio transport
   Layer.provide(
     McpServer.layerStdio({
