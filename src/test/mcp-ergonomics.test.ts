@@ -119,11 +119,50 @@ describe("Phase 1: Output Hygiene - formatBnpResult", () => {
     assert.isFalse("highlight" in result);
   });
 
-  it("should exclude processosParadigma field (token savings)", () => {
-    const precedent = createMockPrecedent();
+  it("should include paradigmProcesses with links when present", () => {
+    const precedent = createMockPrecedent({
+      processosParadigma: [
+        {
+          numero: "0001234-56.2020.1.00.0000",
+          link: "https://example.com/process",
+        },
+      ],
+    });
     const result = formatBnpResult(precedent);
 
-    assert.isFalse("processosParadigma" in result);
+    assert.isNotNull(result.paradigmProcesses);
+    assert.lengthOf(result.paradigmProcesses!, 1);
+    const firstProcess = result.paradigmProcesses![0];
+    assert.isDefined(firstProcess);
+    assert.strictEqual(firstProcess!.link, "https://example.com/process");
+  });
+
+  it("should include suspensions with decisionLink when present", () => {
+    const precedent = createMockPrecedent({
+      suspensoes: [
+        {
+          ativa: true,
+          dataSuspensao: "2024-01-15",
+          descricao: "Suspended by STF",
+          linkDecisao: "https://example.com/decision",
+        },
+      ],
+    });
+    const result = formatBnpResult(precedent);
+
+    assert.isNotNull(result.suspensions);
+    const firstSuspension = result.suspensions![0];
+    assert.isDefined(firstSuspension);
+    assert.strictEqual(
+      firstSuspension!.decisionLink,
+      "https://example.com/decision"
+    );
+  });
+
+  it("should return null for paradigmProcesses when not present", () => {
+    const precedent = createMockPrecedent({ processosParadigma: undefined });
+    const result = formatBnpResult(precedent);
+    assert.isNull(result.paradigmProcesses);
   });
 
   it("should return null date when ultimaAtualizacao is undefined", () => {
