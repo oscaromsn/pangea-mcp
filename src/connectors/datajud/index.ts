@@ -32,8 +32,8 @@ export {
   UnsupportedTribunalError,
   validateCheckDigit,
 } from "../../domain/numero-processo";
-// Configuration (if needed by consumers)
-export { DATAJUD_BASE_URL, DATAJUD_PUBLIC_API_KEY } from "./config";
+// Configuration (Effect Config based - secrets from env vars)
+export { DatajudConfig } from "./config";
 // Errors
 export {
   DatajudApiError,

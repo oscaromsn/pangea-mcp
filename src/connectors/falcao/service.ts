@@ -9,8 +9,8 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect, Schema } from "effect";
-import { FALCAO_API_TOKEN_SECRET, FALCAO_BASE_URL } from "./config";
+import { Effect, Redacted, Schema } from "effect";
+import { FalcaoConfig } from "./config";
 import {
   FalcaoApiError,
   FalcaoNetworkError,
@@ -46,17 +46,21 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
   {
     effect: Effect.gen(function* () {
       const baseClient = yield* HttpClient.HttpClient;
+      // Load config from environment variables
+      const baseUrl = yield* FalcaoConfig.baseUrl;
+      const tokenSecretRedacted = yield* FalcaoConfig.tokenSecret;
+      const tokenSecret = Redacted.value(tokenSecretRedacted);
 
       const sessionId = `_${Math.random().toString(36).substring(2, 11)}`;
       const juristkn = createHash("md5")
-        .update(sessionId + FALCAO_API_TOKEN_SECRET)
+        .update(sessionId + tokenSecret)
         .digest("hex")
         .substring(3, 17);
 
       const sessionParams = { sessionId, juristkn };
 
       const client = baseClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl(FALCAO_BASE_URL)),
+        HttpClient.mapRequest(HttpClientRequest.prependUrl(baseUrl)),
         HttpClient.mapRequest(
           HttpClientRequest.setHeaders({
             "Content-Type": "application/json",

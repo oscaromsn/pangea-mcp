@@ -9,14 +9,14 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect } from "effect";
+import { Effect, Redacted } from "effect";
 import {
   inferTribunalAlias,
   isSupportedTribunalAlias,
   parseNumeroProcesso,
   type TribunalAlias,
 } from "../../domain/numero-processo";
-import { DATAJUD_BASE_URL, DATAJUD_PUBLIC_API_KEY } from "./config";
+import { DatajudConfig } from "./config";
 import {
   DatajudApiError,
   DatajudNetworkError,
@@ -36,6 +36,10 @@ export class DatajudService extends Effect.Service<DatajudService>()(
   {
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient;
+      // Load config from environment variables
+      const baseUrl = yield* DatajudConfig.baseUrl;
+      const apiKeyRedacted = yield* DatajudConfig.apiKey;
+      const apiKey = Redacted.value(apiKeyRedacted);
 
       return {
         /**
@@ -132,14 +136,11 @@ export class DatajudService extends Effect.Service<DatajudService>()(
               }),
             };
 
-            const url = `${DATAJUD_BASE_URL}api_publica_${tribunalAlias}/_search`;
+            const url = `${baseUrl}api_publica_${tribunalAlias}/_search`;
 
             // Make the HTTP request with proper headers and body
             const request = HttpClientRequest.post(url).pipe(
-              HttpClientRequest.setHeader(
-                "Authorization",
-                `APIKey ${DATAJUD_PUBLIC_API_KEY}`
-              ),
+              HttpClientRequest.setHeader("Authorization", `APIKey ${apiKey}`),
               HttpClientRequest.setHeader("Content-Type", "application/json"),
               HttpClientRequest.setBody(HttpBody.unsafeJson(requestBody))
             );

@@ -1,9 +1,11 @@
 /**
  * Datajud API Configuration
- * Constants and configuration values for the Datajud public API
+ *
+ * Re-exports from centralized config for backward compatibility.
+ * Secrets are loaded from environment variables via Effect Config.
+ *
+ * Required Environment Variables:
+ * - DATAJUD_API_KEY: API key for Datajud public API
  */
 
-export const DATAJUD_PUBLIC_API_KEY =
-  "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
-
-export const DATAJUD_BASE_URL = "https://api-publica.datajud.cnj.jus.br/";
+export { DatajudConfig } from "../../config";

@@ -3,7 +3,8 @@
  * Exports all public interfaces, types, errors, and layers for the Falcao connector
  */
 
-export { FALCAO_BASE_URL } from "./config";
+// Configuration (Effect Config based - secrets from env vars)
+export { FalcaoConfig } from "./config";
 
 export {
   FalcaoApiError,
