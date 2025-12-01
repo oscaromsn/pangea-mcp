@@ -41,4 +41,4 @@ export const PRECEDENT_TYPES = {
  * Applied when agent doesn't specify these parameters
  */
 export const DEFAULT_COURTS = ["STF", "STJ", "TST"] as const;
-export const DEFAULT_TYPES = ["SUM", "SV", "RG", "IRR", "RR"] as const;
+export const DEFAULT_TYPES = ["SUM", "SV", "RG", "IRDR", "RR"] as const;
