@@ -460,6 +460,19 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
                 judgment_date:
                   "dataJulgamento" in doc ? doc.dataJulgamento : undefined,
                 class: "classeProcesso" in doc ? doc.classeProcesso : undefined,
+                link: "link" in doc ? doc.link : undefined,
+                paradigm_processes:
+                  "processosParadigma" in doc && doc.processosParadigma
+                    ? (
+                        doc.processosParadigma as ReadonlyArray<{
+                          numero: string;
+                          link: string;
+                        }>
+                      ).map((p) => ({
+                        number: p.numero,
+                        link: p.link,
+                      }))
+                    : undefined,
               })),
             },
             null,
