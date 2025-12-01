@@ -215,7 +215,7 @@ describe("Phase 2: Smart Defaults - Constants", () => {
   it("should have correct DEFAULT_TYPES", () => {
     assert.deepStrictEqual(
       [...DEFAULT_TYPES],
-      ["SUM", "SV", "RG", "IRR", "RR"]
+      ["SUM", "SV", "RG", "IRDR", "RR"] // IRDR = Incidente de Resolução de Demandas Repetitivas
     );
   });
 

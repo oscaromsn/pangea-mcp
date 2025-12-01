@@ -20,7 +20,8 @@ describe("BNP API Constraints - Schema Validation", () => {
   it("should NOT include tamanhoPagina in schema (API does not support it)", () => {
     console.error("\n🔍 Verifying schema matches API constraints...");
 
-    // Create a minimal filter
+    // Create a minimal filter - only provided fields appear in output
+    // NOTE: Defaults are applied in service layer, not schema
     const filter = {
       buscaGeral: "test",
       pagina: 1,
@@ -37,11 +38,10 @@ describe("BNP API Constraints - Schema Validation", () => {
       "tamanhoPagina should NOT be in schema - API does not support page size parameter"
     );
 
-    // Verify expected fields ARE present
+    // Verify provided fields ARE present
     assert.isTrue("buscaGeral" in constructed);
     assert.isTrue("pagina" in constructed);
-    assert.isTrue("cancelados" in constructed);
-    assert.isTrue("ordenacao" in constructed);
+    // NOTE: cancelados and ordenacao are optional - defaults applied in service layer
 
     console.error("✅ Schema correctly excludes unsupported fields");
   });
@@ -105,8 +105,13 @@ describe("BNP API Constraints - Schema Validation", () => {
     console.error("\n✅ Schema matches API specification exactly");
   });
 
-  it("should apply correct default values", () => {
-    console.error("\n🔧 Verifying default value behavior...");
+  it("should document that defaults are applied in service layer", () => {
+    console.error("\n🔧 Documenting default value architecture...");
+
+    // ARCHITECTURE NOTE:
+    // Schema is for validation only - it does NOT apply defaults.
+    // Defaults are applied in BnpService.searchPrecedents() BEFORE validation.
+    // This ensures consistent behavior for both Schema.make() and Schema.decodeUnknown().
 
     const minimalFilter = {
       buscaGeral: "test",
@@ -114,22 +119,30 @@ describe("BNP API Constraints - Schema Validation", () => {
 
     const constructed = PrecedentSearchFilter.make(minimalFilter);
 
-    console.error("Defaults applied:");
+    console.error("Schema output (no defaults):");
     console.error(`  buscaGeral: "${constructed.buscaGeral ?? ""}"`);
-    console.error(`  cancelados: ${constructed.cancelados}`);
-    console.error(`  ordenacao: "${constructed.ordenacao}"`);
-    console.error(`  orgaos: [${constructed.orgaos?.join(", ") ?? ""}]`);
-    console.error(`  pagina: ${constructed.pagina}`);
-    console.error(`  tipos: [${constructed.tipos?.join(", ") ?? ""}]`);
+    console.error(`  cancelados: ${constructed.cancelados} (undefined = not set)`);
+    console.error(`  ordenacao: "${constructed.ordenacao}" (undefined = not set)`);
+    console.error(`  orgaos: ${constructed.orgaos ? `[${constructed.orgaos.join(", ")}]` : "undefined"}`);
+    console.error(`  pagina: ${constructed.pagina ?? "undefined"}`);
+    console.error(`  tipos: ${constructed.tipos ? `[${constructed.tipos.join(", ")}]` : "undefined"}`);
 
-    // Verify defaults match API expectations
-    assert.strictEqual(constructed.cancelados, false);
-    assert.strictEqual(constructed.ordenacao, "Textual");
-    assert.deepStrictEqual(constructed.orgaos, []);
-    assert.strictEqual(constructed.pagina, 1);
-    assert.deepStrictEqual(constructed.tipos, []);
+    // Schema accepts optional fields without defaults
+    assert.strictEqual(constructed.buscaGeral, "test");
+    assert.isUndefined(constructed.cancelados, "Schema does not apply defaults");
+    assert.isUndefined(constructed.ordenacao, "Schema does not apply defaults");
+    assert.isUndefined(constructed.orgaos, "Schema does not apply defaults");
+    assert.isUndefined(constructed.pagina, "Schema does not apply defaults");
+    assert.isUndefined(constructed.tipos, "Schema does not apply defaults");
 
-    console.error("\n✅ All defaults correctly applied");
+    console.error("\n📋 Service layer applies these defaults before API call:");
+    console.error("  cancelados: false");
+    console.error("  ordenacao: 'Textual'");
+    console.error("  orgaos: []");
+    console.error("  pagina: 1");
+    console.error("  tipos: []");
+
+    console.error("\n✅ Architecture documented: Schema validates, Service applies defaults");
   });
 });
 

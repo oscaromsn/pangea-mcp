@@ -54,9 +54,8 @@ describe("MCP Handler Flow - Parameter Transformation", () => {
       "tamanhoPagina should not be in validated object"
     );
 
-    // Verify defaults applied
-    assert.strictEqual(validated.cancelados, false);
-    assert.strictEqual(validated.ordenacao, "Textual");
+    // NOTE: Defaults are applied in service layer, not schema
+    // Schema only validates structure, service applies: cancelados=false, ordenacao="Textual"
 
     console.error("\n✅ Parameter flow validated");
     console.error("   Input: busca_geral + tamanho_pagina");

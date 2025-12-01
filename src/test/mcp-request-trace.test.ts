@@ -148,7 +148,7 @@ describe.skip("MCP Request Trace - Reproduce Exact Client Scenario", () => {
 });
 
 describe("MCP Request Trace - Field Analysis", () => {
-  it("should analyze all fields in schema output", () => {
+  it("should analyze schema output (defaults applied in service layer)", () => {
     console.error("\n🔬 === SCHEMA FIELD ANALYSIS ===");
 
     // Test with minimal input
@@ -171,42 +171,44 @@ describe("MCP Request Trace - Field Analysis", () => {
 
     // Check each field
     fields.forEach((field) => {
-      const value = (validated as any)[field];
+      const value = (validated as Record<string, unknown>)[field];
       const type = Array.isArray(value) ? "array" : typeof value;
       console.error(`   - ${field}: ${type} = ${JSON.stringify(value)}`);
     });
 
-    // Expected fields from API spec
-    const expectedFields = [
+    // With the new architecture, schema only includes provided fields
+    // Defaults are applied in service layer before validation
+    assert.isTrue("buscaGeral" in validated, "Provided field should be present");
+    assert.strictEqual(validated.buscaGeral, "test");
+
+    // Verify schema does NOT inject unexpected fields
+    const knownSchemaFields = [
       "buscaGeral",
       "cancelados",
       "ordenacao",
       "orgaos",
       "pagina",
       "tipos",
+      "todasPalavras",
+      "quaisquerPalavras",
+      "semPalavras",
+      "trechoExato",
     ];
 
-    console.error("\n✅ Expected fields from OpenAPI spec:");
-    expectedFields.forEach((field) => {
-      const present = field in validated;
-      console.error(`   ${present ? "✓" : "✗"} ${field}`);
-      if (!present) {
-        assert.fail(`Expected field "${field}" is missing!`);
-      }
-    });
-
-    // Check for unexpected fields
-    const unexpectedFields = fields.filter((f) => !expectedFields.includes(f));
+    const unexpectedFields = fields.filter((f) => !knownSchemaFields.includes(f));
     if (unexpectedFields.length > 0) {
       console.error("\n❌ UNEXPECTED FIELDS FOUND:");
       unexpectedFields.forEach((field) => {
         console.error(
-          `   - ${field} = ${JSON.stringify((validated as any)[field])}`
+          `   - ${field} = ${JSON.stringify((validated as Record<string, unknown>)[field])}`
         );
       });
       assert.fail(`Unexpected fields: ${unexpectedFields.join(", ")}`);
     }
 
-    console.error("\n✅ All fields valid");
+    console.error("\n📋 Architecture note:");
+    console.error("   Schema validates structure only.");
+    console.error("   Defaults (cancelados, ordenacao, pagina) applied in BnpService.");
+    console.error("\n✅ Schema output valid");
   });
 });
