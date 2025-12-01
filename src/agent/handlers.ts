@@ -225,7 +225,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             );
 
           return result;
-        }),
+        }).pipe(Effect.withSpan("Agent.searchBnp", { attributes: { query } })),
 
       /**
        * Implementation: Search Falcao (Labor Law Jurisprudence)
@@ -295,7 +295,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             );
 
           return result;
-        }),
+        }).pipe(Effect.withSpan("Agent.searchFalcao", { attributes: { query } })),
 
       /**
        * Implementation: Get Datajud Process Details
@@ -349,7 +349,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             );
 
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.getDatajudProcess", {
+            attributes: { processNumber },
+          })
+        ),
 
       /**
        * Implementation: Get Full Falcao Document
@@ -367,7 +371,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             )
           );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.getFalcaoDocument", {
+            attributes: { tribunal, documentId },
+          })
+        ),
 
       /**
        * Implementation: Advanced Falcao Search
@@ -416,7 +424,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
               )
             );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.searchFalcaoAdvanced", {
+            attributes: { query, documentType, tribunals },
+          })
+        ),
 
       /**
        * Implementation: Get Falcao Tribunals
@@ -439,7 +451,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             )
           );
           return result;
-        }),
+        }).pipe(Effect.withSpan("Agent.getFalcaoTribunals")),
 
       /**
        * Implementation: Get Falcao Document Counts
@@ -473,7 +485,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
               )
             );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.getFalcaoDocumentCounts", {
+            attributes: { query, tribunals },
+          })
+        ),
 
       /**
        * Implementation: Falcao Autocomplete
@@ -507,7 +523,9 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             )
           );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.getFalcaoAutocomplete", { attributes: { text } })
+        ),
 
       /**
        * Implementation: Advanced BNP Search
@@ -575,7 +593,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
               )
             );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.searchBnpAdvanced", {
+            attributes: { query, courts, types },
+          })
+        ),
 
       /**
        * Implementation: Advanced Datajud Search
@@ -657,7 +679,11 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
               )
             );
           return result;
-        }),
+        }).pipe(
+          Effect.withSpan("Agent.searchDatajudAdvanced", {
+            attributes: { tribunal, processClass, courtCode },
+          })
+        ),
 
       /**
        * Implementation: Parse Process Number
@@ -695,7 +721,10 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
                 `Error parsing process number: ${"_tag" in error ? error._tag : "Unknown error"}`
               )
             )
-          )
+          ),
+          Effect.withSpan("Agent.parseProcessNumber", {
+            attributes: { processNumber },
+          })
         ),
     };
   })

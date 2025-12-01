@@ -49,10 +49,9 @@ const ERROR_HINTS: Record<string, string> = {
 /**
  * Helper function to format errors for MCP tool responses
  * Extracts appropriate error message based on error type and adds hints for agent self-correction
+ * Note: Error logging is handled via Effect.logError in handler pipelines
  */
-function formatError(error: unknown, context: string): string {
-  // Log full error to stderr for debugging
-  console.error(`❌ ${context} error:`, error);
+function formatError(error: unknown): string {
 
   let errorMessage = "Unknown error";
   let errorTag = "UnknownError";
@@ -203,9 +202,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }).pipe(
-          Effect.catchAll((error) =>
-            Effect.succeed(formatError(error, "search_jurisprudence"))
-          )
+          Effect.tapError((error) =>
+            Effect.logError("search_jurisprudence failed", error)
+          ),
+          Effect.catchAll((error) => Effect.succeed(formatError(error))),
+          Effect.withSpan("MCP.search_jurisprudence", {
+            attributes: { busca_geral: params.busca_geral },
+          })
         ),
 
       /**
@@ -241,9 +244,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }).pipe(
-          Effect.catchAll((error) =>
-            Effect.succeed(formatError(error, "search_by_court"))
-          )
+          Effect.tapError((error) =>
+            Effect.logError("search_by_court failed", error)
+          ),
+          Effect.catchAll((error) => Effect.succeed(formatError(error))),
+          Effect.withSpan("MCP.search_by_court", {
+            attributes: { busca_geral: params.busca_geral },
+          })
         ),
 
       /**
@@ -277,9 +284,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }).pipe(
-          Effect.catchAll((error) =>
-            Effect.succeed(formatError(error, "search_by_type"))
-          )
+          Effect.tapError((error) =>
+            Effect.logError("search_by_type failed", error)
+          ),
+          Effect.catchAll((error) => Effect.succeed(formatError(error))),
+          Effect.withSpan("MCP.search_by_type", {
+            attributes: { busca_geral: params.busca_geral },
+          })
         ),
 
       /**
@@ -300,7 +311,7 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             null,
             2
           )
-        ),
+        ).pipe(Effect.withSpan("MCP.get_available_courts")),
 
       /**
        * Get precedent types handler
@@ -317,7 +328,7 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             null,
             2
           )
-        ),
+        ).pipe(Effect.withSpan("MCP.get_precedent_types")),
 
       /**
        * Save search handler
@@ -338,7 +349,11 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             success: true,
             message: `Search '${params.name}' saved successfully`,
           });
-        }),
+        }).pipe(
+          Effect.withSpan("MCP.save_search", {
+            attributes: { name: params.name },
+          })
+        ),
 
       /**
        * Analyze results handler
@@ -364,7 +379,7 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             null,
             2
           );
-        }),
+        }).pipe(Effect.withSpan("MCP.analyze_results")),
 
       /**
        * Get process details handler (DataJud)
@@ -417,9 +432,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }).pipe(
-          Effect.catchAll((error) =>
-            Effect.succeed(formatError(error, "get_process_details"))
-          )
+          Effect.tapError((error) =>
+            Effect.logError("get_process_details failed", error)
+          ),
+          Effect.catchAll((error) => Effect.succeed(formatError(error))),
+          Effect.withSpan("MCP.get_process_details", {
+            attributes: { process_number: params.process_number },
+          })
         ),
 
       /**
@@ -479,9 +498,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             2
           );
         }).pipe(
-          Effect.catchAll((error) =>
-            Effect.succeed(formatError(error, "search_labor_jurisprudence"))
-          )
+          Effect.tapError((error) =>
+            Effect.logError("search_labor_jurisprudence failed", error)
+          ),
+          Effect.catchAll((error) => Effect.succeed(formatError(error))),
+          Effect.withSpan("MCP.search_labor_jurisprudence", {
+            attributes: { query: params.query },
+          })
         ),
     };
   })
