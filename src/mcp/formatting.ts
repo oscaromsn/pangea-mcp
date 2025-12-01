@@ -12,6 +12,16 @@ export interface FormattedBnpResult {
   readonly status: string;
   readonly summary: string | null;
   readonly date: string | null;
+  readonly paradigmProcesses: ReadonlyArray<{
+    number: string;
+    link: string | undefined;
+  }> | null;
+  readonly suspensions: ReadonlyArray<{
+    active: boolean;
+    date: string;
+    description: string;
+    decisionLink: string | undefined;
+  }> | null;
 }
 
 /**
@@ -25,8 +35,8 @@ export const stripHtml = (html: string | null | undefined): string | null => {
 /**
  * Formats a single BNP precedent result for agent consumption
  * - Strips HTML tags from tese and questao
- * - Flattens nested structures (removes highlight, processosParadigma)
- * - Returns clean object with essential fields only
+ * - Preserves paradigm processes and suspensions with links for citations
+ * - Removes highlight field (search-specific, not needed for citations)
  */
 export const formatBnpResult = (precedent: Precedent): FormattedBnpResult => ({
   id: precedent.id,
@@ -36,6 +46,18 @@ export const formatBnpResult = (precedent: Precedent): FormattedBnpResult => ({
   status: precedent.situacao,
   summary: stripHtml(precedent.tese) ?? stripHtml(precedent.questao),
   date: precedent.ultimaAtualizacao ?? null,
+  paradigmProcesses:
+    precedent.processosParadigma?.map((p) => ({
+      number: p.numero,
+      link: p.link,
+    })) ?? null,
+  suspensions:
+    precedent.suspensoes?.map((s) => ({
+      active: s.ativa,
+      date: s.dataSuspensao,
+      description: s.descricao,
+      decisionLink: s.linkDecisao,
+    })) ?? null,
 });
 
 /**
