@@ -14,16 +14,12 @@ import { Schema } from "effect";
  * - A non-empty `tipos` array (precedent type filters)
  *
  * Searches with only one filter (or neither) will fail with HTTP 400.
- * This constraint is validated in the service layer after defaults are applied.
+ * Use ValidatedPrecedentSearchFilter to enforce this constraint after defaults are applied.
  */
 export const PrecedentSearchFilter = Schema.Struct({
-  // Fields with defaults
-  buscaGeral: Schema.optional(Schema.String).pipe(
-    Schema.withConstructorDefault(() => "")
-  ),
-  cancelados: Schema.optional(Schema.Boolean).pipe(
-    Schema.withConstructorDefault(() => false)
-  ),
+  // Required search fields (API needs these)
+  buscaGeral: Schema.optional(Schema.String),
+  cancelados: Schema.optional(Schema.Boolean),
   ordenacao: Schema.optional(
     Schema.Literal(
       "Textual",
@@ -32,18 +28,12 @@ export const PrecedentSearchFilter = Schema.Struct({
       "Numérica Ascendente",
       "Numérica Descendente"
     )
-  ).pipe(Schema.withConstructorDefault(() => "Textual" as const)),
-  orgaos: Schema.optional(Schema.Array(Schema.String)).pipe(
-    Schema.withConstructorDefault(() => [])
   ),
-  pagina: Schema.optional(Schema.Int.pipe(Schema.positive())).pipe(
-    Schema.withConstructorDefault(() => 1)
-  ),
+  orgaos: Schema.optional(Schema.Array(Schema.String)),
+  pagina: Schema.optional(Schema.Int.pipe(Schema.positive())),
   // Note: The BNP API does not support a page size parameter - it always returns 10 results per page
-  tipos: Schema.optional(Schema.Array(Schema.String)).pipe(
-    Schema.withConstructorDefault(() => [])
-  ),
-  // Truly optional fields
+  tipos: Schema.optional(Schema.Array(Schema.String)),
+  // Truly optional fields (no defaults needed)
   todasPalavras: Schema.optional(Schema.String),
   quaisquerPalavras: Schema.optional(Schema.String),
   semPalavras: Schema.optional(Schema.String),
@@ -52,6 +42,30 @@ export const PrecedentSearchFilter = Schema.Struct({
 
 export type PrecedentSearchFilter = Schema.Schema.Type<
   typeof PrecedentSearchFilter
+>;
+
+/**
+ * Validated Precedent Search Filter - Enforces BNP API constraint
+ *
+ * This schema ensures that both `orgaos` AND `tipos` arrays are non-empty
+ * after defaults are applied. The BNP API returns HTTP 400 if either is missing.
+ */
+export const ValidatedPrecedentSearchFilter = PrecedentSearchFilter.pipe(
+  Schema.filter(
+    (filter) => {
+      const hasOrgaos = filter.orgaos !== undefined && filter.orgaos.length > 0;
+      const hasTipos = filter.tipos !== undefined && filter.tipos.length > 0;
+      return hasOrgaos && hasTipos;
+    },
+    {
+      message: () =>
+        "BNP API requires BOTH filters: 'orgaos' (courts) AND 'tipos' (precedent types) must both be provided with non-empty values.",
+    }
+  )
+);
+
+export type ValidatedPrecedentSearchFilter = Schema.Schema.Type<
+  typeof ValidatedPrecedentSearchFilter
 >;
 
 /**

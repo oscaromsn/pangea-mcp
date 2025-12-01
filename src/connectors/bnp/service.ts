@@ -10,13 +10,14 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 import { BNP_BASE_URL } from "./config";
 import { BnpApiError, BnpNetworkError, BnpValidationError } from "./errors";
 import {
   BnpSearchResponse,
   type PrecedentSearchBody,
-  PrecedentSearchFilter,
+  type PrecedentSearchFilter,
+  ValidatedPrecedentSearchFilter,
 } from "./schema";
 
 /**
@@ -43,51 +44,62 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
         Effect.gen(function* () {
           const url = `${BNP_BASE_URL}precedentes`;
 
-          // Apply schema defaults and construct filter
-          const validatedFilter = yield* Effect.try({
-            try: () => PrecedentSearchFilter.make(filter),
-            catch: (error) =>
-              new BnpValidationError({
-                message:
-                  error instanceof Error
-                    ? `Invalid search filter: ${error.message}`
-                    : "Invalid search filter",
-              }),
-          });
+          // Step 1: Apply defaults for required API fields
+          const filterWithDefaults = {
+            ...filter,
+            buscaGeral: filter.buscaGeral ?? "",
+            cancelados: filter.cancelados ?? false,
+            ordenacao: filter.ordenacao ?? "Textual",
+            orgaos: filter.orgaos ?? [],
+            pagina: filter.pagina ?? 1,
+            tipos: filter.tipos ?? [],
+          };
 
-          // CRITICAL: Validate API constraint AFTER defaults are applied
-          // BNP API requires BOTH filters to be non-empty (orgaos AND tipos)
-          const hasOrgaos =
-            validatedFilter.orgaos && validatedFilter.orgaos.length > 0;
-          const hasTipos =
-            validatedFilter.tipos && validatedFilter.tipos.length > 0;
+          // Step 2: Validate filter using schema - enforces API constraint
+          // (both orgaos AND tipos must be non-empty)
+          const validatedFilter = yield* Schema.decodeUnknown(
+            ValidatedPrecedentSearchFilter
+          )(filterWithDefaults).pipe(
+            Effect.mapError(
+              (parseError) =>
+                new BnpValidationError({
+                  message: parseError.message,
+                })
+            )
+          );
 
-          if (!hasOrgaos || !hasTipos) {
-            return yield* Effect.fail(
-              new BnpValidationError({
-                message:
-                  "BNP API requires BOTH filters: 'orgaos' (courts) AND 'tipos' (precedent types) must both be provided with non-empty values.",
-              })
-            );
+          // Step 3: Build request body - remove empty arrays (API rejects them with HTTP 500)
+          const requestFilter: Record<string, unknown> = {
+            buscaGeral: validatedFilter.buscaGeral,
+            cancelados: validatedFilter.cancelados,
+            ordenacao: validatedFilter.ordenacao,
+            pagina: validatedFilter.pagina,
+          };
+
+          // Only include non-empty arrays
+          if (validatedFilter.orgaos && validatedFilter.orgaos.length > 0) {
+            requestFilter.orgaos = validatedFilter.orgaos;
+          }
+          if (validatedFilter.tipos && validatedFilter.tipos.length > 0) {
+            requestFilter.tipos = validatedFilter.tipos;
           }
 
-          // Remove empty arrays before sending to API (API rejects empty arrays)
-          const cleanedFilter: Record<string, unknown> = { ...validatedFilter };
-          if (
-            Array.isArray(cleanedFilter.orgaos) &&
-            cleanedFilter.orgaos.length === 0
-          ) {
-            cleanedFilter.orgaos = undefined;
+          // Include optional search modifiers if provided
+          if (validatedFilter.todasPalavras) {
+            requestFilter.todasPalavras = validatedFilter.todasPalavras;
           }
-          if (
-            Array.isArray(cleanedFilter.tipos) &&
-            cleanedFilter.tipos.length === 0
-          ) {
-            cleanedFilter.tipos = undefined;
+          if (validatedFilter.quaisquerPalavras) {
+            requestFilter.quaisquerPalavras = validatedFilter.quaisquerPalavras;
+          }
+          if (validatedFilter.semPalavras) {
+            requestFilter.semPalavras = validatedFilter.semPalavras;
+          }
+          if (validatedFilter.trechoExato) {
+            requestFilter.trechoExato = validatedFilter.trechoExato;
           }
 
           const requestBody: PrecedentSearchBody = {
-            filtro: cleanedFilter as PrecedentSearchFilter,
+            filtro: requestFilter as PrecedentSearchFilter,
           };
 
           // Make the HTTP request with proper headers and body

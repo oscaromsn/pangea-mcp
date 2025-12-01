@@ -24,6 +24,8 @@ export {
   type PrecedentSearchBody as PrecedentSearchBodyType,
   PrecedentSearchFilter,
   type PrecedentSearchFilter as PrecedentSearchFilterType,
+  ValidatedPrecedentSearchFilter,
+  type ValidatedPrecedentSearchFilter as ValidatedPrecedentSearchFilterType,
 } from "./schema";
 // Service and Implementation
 export { BnpService } from "./service";
