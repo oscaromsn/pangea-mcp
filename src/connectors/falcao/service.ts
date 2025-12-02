@@ -10,6 +10,7 @@ import {
   HttpClientResponse,
 } from "@effect/platform";
 import { Effect, Redacted, Schema } from "effect";
+import { withNetworkRetry } from "../../shared/retry-policy";
 import { FalcaoConfig } from "./config";
 import {
   FalcaoApiError,
@@ -129,6 +130,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoSearchResponseSchema)
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -176,6 +178,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -226,6 +229,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoDocumentSchema)
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -285,6 +289,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoCountResponseSchema)
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -332,6 +337,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -375,6 +381,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 HttpClientResponse.schemaBodyJson(FalcaoVersionInfoSchema)
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
@@ -422,6 +429,7 @@ export class FalcaoService extends Effect.Service<FalcaoService>()(
                 )
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(

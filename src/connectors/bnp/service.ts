@@ -11,6 +11,7 @@ import {
   HttpClientResponse,
 } from "@effect/platform";
 import { Effect, Schema } from "effect";
+import { withNetworkRetry } from "../../shared/retry-policy";
 import { BNP_BASE_URL } from "./config";
 import { BnpApiError, BnpNetworkError, BnpValidationError } from "./errors";
 import {
@@ -124,7 +125,7 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
             HttpClientRequest.setBody(HttpBody.unsafeJson(requestBody))
           );
 
-          // Execute request and let HttpClient handle all HTTP-level errors naturally
+          // Execute request with retry for network errors
           // Filter for OK status before parsing body, then transform errors to domain-specific errors
           return yield* httpClient.execute(request).pipe(
             Effect.flatMap((response) =>
@@ -135,6 +136,8 @@ export class BnpService extends Effect.Service<BnpService>()("app/BnpService", {
               )
             ),
             Effect.scoped,
+            // Retry on network errors (RequestError) with exponential backoff
+            withNetworkRetry,
             Effect.catchTags({
               RequestError: (e) =>
                 Effect.fail(

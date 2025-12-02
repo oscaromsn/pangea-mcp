@@ -16,6 +16,7 @@ import {
   parseNumeroProcesso,
   type TribunalAlias,
 } from "../../domain/numero-processo";
+import { withNetworkRetry } from "../../shared/retry-policy";
 import { DatajudConfig } from "./config";
 import {
   DatajudApiError,
@@ -145,12 +146,13 @@ export class DatajudService extends Effect.Service<DatajudService>()(
               HttpClientRequest.setBody(HttpBody.unsafeJson(requestBody))
             );
 
-            // Execute request and handle response with proper error mapping
+            // Execute request with retry for network errors
             return yield* httpClient.execute(request).pipe(
               Effect.flatMap(
                 HttpClientResponse.schemaBodyJson(DatajudSearchResponse)
               ),
               Effect.scoped,
+              withNetworkRetry,
               Effect.catchTags({
                 RequestError: (e) =>
                   Effect.fail(
