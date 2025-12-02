@@ -8,6 +8,13 @@
  * type safety, and the Model Context Protocol (MCP) for LLM integration.
  *
  * Run with: bun src/index.ts
+ *
+ * Environment Variables (all optional - defaults provided):
+ * - DATAJUD_API_KEY: Override DataJud public API key
+ * - FALCAO_TOKEN_SECRET: Override Falcão API token secret
+ * - DATAJUD_BASE_URL: Override DataJud API base URL
+ * - FALCAO_BASE_URL: Override Falcão API base URL
+ * - BNP_BASE_URL: Override BNP API base URL
  */
 
 import { BunRuntime } from "@effect/platform-bun";
