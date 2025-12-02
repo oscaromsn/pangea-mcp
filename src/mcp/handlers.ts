@@ -2,16 +2,27 @@
  * MCP Tool Handlers - Toolkit Implementation
  *
  * Implements the business logic for each MCP tool by delegating to
- * connector services (BnpService) and session management (SessionService).
+ * the LegalResearchService (shared business logic) and session management.
  *
  * Uses the Toolkit.toLayer pattern to create handlers as an Effect Layer.
+ *
+ * Architecture:
+ * - LegalResearchService: Core business logic (API calls, data transformation)
+ * - MCP Handlers: JSON formatting for MCP protocol responses
+ *
+ * LOGGING CONSTRAINT:
+ * All Effect.log* calls in this file are routed to stderr via the Logger
+ * configured in server.ts (Logger.prettyLogger({ stderr: true })). This is
+ * CRITICAL because stdout is reserved for JSON-RPC protocol messages - any
+ * stdout output would corrupt the MCP communication channel.
+ *
+ * Safe to use: Effect.logInfo, Effect.logDebug, Effect.logError, Effect.logWarning
+ * These all write to stderr when the server's logger layer is provided.
  */
 
 import { Effect, Layer } from "effect";
-import { BnpService, BnpServiceLive } from "../connectors/bnp";
-import { DatajudService, DatajudServiceLive } from "../connectors/datajud";
-import { FalcaoService, FalcaoServiceLive } from "../connectors/falcao";
 import { SessionService } from "../services/session-service";
+import { LegalResearchService } from "../usecases/legal-research";
 import {
   COURT_CODES,
   DEFAULT_COURTS,
@@ -52,7 +63,6 @@ const ERROR_HINTS: Record<string, string> = {
  * Note: Error logging is handled via Effect.logError in handler pipelines
  */
 function formatError(error: unknown): string {
-
   let errorMessage = "Unknown error";
   let errorTag = "UnknownError";
   let hint: string | undefined;
@@ -131,9 +141,7 @@ function formatError(error: unknown): string {
  */
 export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
   Effect.gen(function* () {
-    const bnpService = yield* BnpService;
-    const datajudService = yield* DatajudService;
-    const falcaoService = yield* FalcaoService;
+    const legalResearch = yield* LegalResearchService;
     const sessionService = yield* SessionService;
 
     return {
@@ -163,18 +171,16 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
               ? [...params.tipos]
               : [...DEFAULT_TYPES];
 
-          const serviceParams = {
-            buscaGeral: params.busca_geral,
-            todasPalavras: params.todas_palavras,
-            quaisquerPalavras: params.quaisquer_palavras,
-            semPalavras: params.sem_palavras,
-            trechoExato: params.trecho_exato,
-            pagina: params.pagina,
-            orgaos: effectiveOrgaos,
-            tipos: effectiveTipos,
-          };
-
-          const result = yield* bnpService.searchPrecedents(serviceParams);
+          const result = yield* legalResearch.searchBnp({
+            query: params.busca_geral,
+            allWords: params.todas_palavras,
+            anyWords: params.quaisquer_palavras,
+            excludeWords: params.sem_palavras,
+            exactPhrase: params.trecho_exato,
+            page: params.pagina,
+            courts: effectiveOrgaos,
+            types: effectiveTipos,
+          });
 
           // Add to search history
           yield* sessionService.addToHistory(params, result.total);
@@ -184,18 +190,12 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             {
               success: true,
               total: result.total,
-              page: params.pagina ?? 1,
-              page_size: 10, // API always returns 10 results
-              results: formatBnpResults(result.resultados),
+              page: result.page,
+              page_size: result.pageSize,
+              results: formatBnpResults(result.results),
               aggregations: {
-                types: result.aggsEspecies.map((a) => ({
-                  code: a.tipo,
-                  count: a.total,
-                })),
-                courts: result.aggsOrgaos.map((a) => ({
-                  code: a.tipo,
-                  count: a.total,
-                })),
+                types: result.aggregations.byType,
+                courts: result.aggregations.byCourt,
               },
             },
             null,
@@ -222,15 +222,13 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
         readonly tamanho_pagina?: number | undefined;
       }) =>
         Effect.gen(function* () {
-          const serviceParams = {
-            buscaGeral: params.busca_geral,
-            orgaos: [...params.orgaos],
-            tipos: [...params.tipos],
-            pagina: params.pagina,
+          const result = yield* legalResearch.searchBnp({
+            query: params.busca_geral,
+            courts: [...params.orgaos],
+            types: [...params.tipos],
+            page: params.pagina,
             // Note: tamanho_pagina accepted but not sent (API always returns 10 results)
-          };
-
-          const result = yield* bnpService.searchPrecedents(serviceParams);
+          });
 
           return JSON.stringify(
             {
@@ -238,7 +236,7 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
               total: result.total,
               courts_filter: params.orgaos,
               types_filter: params.tipos,
-              results: result.resultados,
+              results: result.results,
             },
             null,
             2
@@ -264,11 +262,11 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
         readonly tamanho_pagina?: number | undefined;
       }) =>
         Effect.gen(function* () {
-          const result = yield* bnpService.searchPrecedents({
-            buscaGeral: params.busca_geral,
-            tipos: [...params.tipos],
-            orgaos: [...params.orgaos],
-            pagina: params.pagina,
+          const result = yield* legalResearch.searchBnp({
+            query: params.busca_geral,
+            types: [...params.tipos],
+            courts: [...params.orgaos],
+            page: params.pagina,
             // Note: tamanho_pagina accepted but not sent (API always returns 10 results)
           });
 
@@ -278,7 +276,7 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
               total: result.total,
               types_filter: params.tipos,
               courts_filter: params.orgaos,
-              results: result.resultados,
+              results: result.results,
             },
             null,
             2
@@ -386,14 +384,11 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
        */
       get_process_details: (params: { readonly process_number: string }) =>
         Effect.gen(function* () {
-          const result = yield* datajudService.searchProcessMetadata(
+          const result = yield* legalResearch.getProcessDetails(
             params.process_number
           );
 
-          // Format response for agent consumption
-          const hits = result.hits.hits;
-          const firstHit = hits[0];
-          if (!firstHit) {
+          if (!result.found || !result.process) {
             return JSON.stringify({
               success: true,
               found: false,
@@ -401,31 +396,19 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
             });
           }
 
-          const process = firstHit._source;
-          // Normalize assuntos - array of (single object | array of objects)
-          const subjectsList = (process.assuntos ?? []).flatMap((item) => {
-            // Check if item is an array by checking for 'length' property
-            if ("length" in item) {
-              return (item as ReadonlyArray<{ nome: string }>).map(
-                (a) => a.nome
-              );
-            }
-            return [item.nome];
-          });
-
           return JSON.stringify(
             {
               success: true,
               found: true,
               process: {
-                number: process.numeroProcesso,
-                tribunal: process.tribunal,
-                court: process.orgaoJulgador?.nome,
-                class: process.classe?.nome,
-                subjects: subjectsList,
-                filingDate: process.dataAjuizamento,
-                degree: process.grau,
-                system: process.sistema?.nome,
+                number: result.process.number,
+                tribunal: result.process.tribunal,
+                court: result.process.court,
+                class: result.process.class,
+                subjects: result.process.subjects,
+                filingDate: result.process.filingDate,
+                degree: result.process.degree,
+                system: result.process.system,
               },
             },
             null,
@@ -455,20 +438,19 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
         readonly page?: number | undefined;
       }) =>
         Effect.gen(function* () {
-          const result = yield* falcaoService.search({
-            texto: params.query,
-            colecao: params.document_type ?? "acordaos",
+          const result = yield* legalResearch.searchFalcao({
+            query: params.query,
+            documentType: params.document_type ?? "acordaos",
             page: params.page ?? 0,
-            size: 10,
           });
 
           // Format response for agent consumption
           return JSON.stringify(
             {
               success: true,
-              total: result.quantidadeTotal,
-              page: params.page ?? 0,
-              results: result.documentos.map((doc) => ({
+              total: result.total,
+              page: result.page,
+              results: result.documents.map((doc) => ({
                 id: "id" in doc ? doc.id : undefined,
                 tribunal: doc.tribunal,
                 process_number:
@@ -509,13 +491,8 @@ export const PangeaToolHandlersLive = PangeaToolkit.toLayer(
     };
   })
 ).pipe(
-  // Provide service dependencies
+  // Provide LegalResearchService (which internally provides connector services) and SessionService
   Layer.provide(
-    Layer.mergeAll(
-      BnpServiceLive,
-      DatajudServiceLive,
-      FalcaoServiceLive,
-      SessionService.Default
-    )
+    Layer.mergeAll(LegalResearchService.Default, SessionService.Default)
   )
 );

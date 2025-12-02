@@ -1,27 +1,19 @@
 /**
  * AI Agent Tool Handlers - Implementation layer for legal research tools
  *
- * This module implements the actual logic for each AI tool by connecting them to
- * the existing connector services (BnpService, DatajudService, FalcaoService).
+ * This module implements the actual logic for each AI tool by delegating to
+ * the LegalResearchService, which centralizes business logic shared with MCP handlers.
  *
  * Key design: Handlers format responses as human-readable text summaries, not raw JSON,
  * because LLMs process text more effectively and can synthesize better answers.
+ *
+ * Architecture:
+ * - LegalResearchService: Business logic (API calls, data transformation)
+ * - Agent Handlers: Output formatting (text summaries for LLM consumption)
  */
 
 import { Effect, Layer } from "effect";
-import { BnpService, BnpServiceLive } from "../connectors/bnp/index";
-import {
-  DatajudService,
-  DatajudServiceLive,
-} from "../connectors/datajud/index";
-import { FalcaoService, FalcaoServiceLive } from "../connectors/falcao/index";
-import type { TribunalAlias } from "../domain/numero-processo";
-import {
-  formatNumeroProcesso,
-  inferTribunalAlias,
-  isSupportedTribunalAlias,
-  parseNumeroProcesso,
-} from "../domain/numero-processo";
+import { LegalResearchService } from "../usecases/legal-research";
 import { LegalToolkit } from "./tools";
 
 // =============================================================================
@@ -166,18 +158,15 @@ const formatFalcaoSearchResult = (doc: unknown, idx: number): string => {
  * Tool Handler Implementations Layer
  *
  * This layer implements the logic for each tool by:
- * 1. Consuming the required connector services via dependency injection
- * 2. Mapping simplified tool inputs to full connector schemas
- * 3. Executing API calls through the connectors
- * 4. Formatting results as concise text summaries (top 3 results)
- * 5. Catching all errors and returning formatted error strings
+ * 1. Consuming LegalResearchService via dependency injection
+ * 2. Calling service methods for business logic execution
+ * 3. Formatting results as concise text summaries (top 3 results)
+ * 4. Catching all errors and returning formatted error strings
  */
 export const LegalToolHandlersLive = LegalToolkit.toLayer(
   Effect.gen(function* () {
-    // 1. Acquire connector services via dependency injection
-    const bnp = yield* BnpService;
-    const datajud = yield* DatajudService;
-    const falcao = yield* FalcaoService;
+    // 1. Acquire LegalResearchService via dependency injection
+    const legalResearch = yield* LegalResearchService;
 
     // 2. Return implementations for each tool
     return {
@@ -189,19 +178,16 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       searchBnp: ({ query }) =>
         Effect.gen(function* () {
-          const result = yield* bnp
-            .searchPrecedents({
-              buscaGeral: query,
-              pagina: 1, // Always use first page - LLM can ask for more results if needed
-            })
+          const result = yield* legalResearch
+            .searchBnp({ query, page: 1 })
             .pipe(
               Effect.map((response) => {
                 // Format results as human-readable text
-                if (response.resultados.length === 0) {
+                if (response.results.length === 0) {
                   return `No precedents found for query: "${query}"`;
                 }
 
-                const summary = response.resultados
+                const summary = response.results
                   .slice(0, 3) // Take top 3 results
                   .map((precedent, idx) => {
                     const title = `${precedent.tipo} ${precedent.nr} from ${precedent.orgao}`;
@@ -235,20 +221,15 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       searchFalcao: ({ query }) =>
         Effect.gen(function* () {
-          const result = yield* falcao
-            .search({
-              texto: query,
-              colecao: "acordaos", // Default to court decisions
-              size: 10, // API only allows 5 or 10
-              page: 0, // Always use first page
-            })
+          const result = yield* legalResearch
+            .searchFalcao({ query, documentType: "acordaos", page: 0 })
             .pipe(
               Effect.map((response) => {
-                if (response.documentos.length === 0) {
+                if (response.documents.length === 0) {
                   return `No documents found in Falcao for query: "${query}"`;
                 }
 
-                const summary = response.documentos
+                const summary = response.documents
                   .slice(0, 3)
                   .map((doc, idx) => {
                     // Handle both regular documents and precedente documents
@@ -284,7 +265,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
                   })
                   .join("\n\n");
 
-                return `Found ${response.quantidadeTotal} documents. Top 3:\n\n${summary}`;
+                return `Found ${response.total} documents. Top 3:\n\n${summary}`;
               }),
               // Log structured error for debugging, return simple message to LLM
               Effect.catchAll((error) =>
@@ -295,7 +276,9 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
             );
 
           return result;
-        }).pipe(Effect.withSpan("Agent.searchFalcao", { attributes: { query } })),
+        }).pipe(
+          Effect.withSpan("Agent.searchFalcao", { attributes: { query } })
+        ),
 
       /**
        * Implementation: Get Datajud Process Details
@@ -305,33 +288,25 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       getDatajudProcess: ({ processNumber }) =>
         Effect.gen(function* () {
-          const result = yield* datajud
-            .searchProcessMetadata(processNumber)
+          const result = yield* legalResearch
+            .getProcessDetails(processNumber)
             .pipe(
               Effect.map((response) => {
-                const hit = response.hits.hits[0]?._source;
-                if (!hit) {
+                if (!response.found || !response.process) {
                   return `Process number "${processNumber}" not found in Datajud.`;
                 }
 
+                const p = response.process;
                 // Format process details as human-readable text
                 const details = [
-                  `Process: ${hit.numeroProcesso}`,
-                  `Tribunal: ${hit.tribunal}`,
-                  hit.classe
-                    ? `Class: ${hit.classe.nome} (${hit.classe.codigo})`
+                  `Process: ${p.number}`,
+                  `Tribunal: ${p.tribunal}`,
+                  p.class ? `Class: ${p.class}` : "",
+                  p.court ? `Court: ${p.court}` : "",
+                  p.subjects.length > 0
+                    ? `Subjects: ${p.subjects.join(", ")}`
                     : "",
-                  hit.orgaoJulgador
-                    ? `Court: ${hit.orgaoJulgador.nome} (${hit.orgaoJulgador.codigo})`
-                    : "",
-                  hit.assuntos &&
-                  Array.isArray(hit.assuntos) &&
-                  hit.assuntos.length > 0
-                    ? `Subjects: ${hit.assuntos.map((a) => a.nome).join(", ")}`
-                    : "",
-                  hit.dataAjuizamento
-                    ? `Filing date: ${hit.dataAjuizamento}`
-                    : "",
+                  p.filingDate ? `Filing date: ${p.filingDate}` : "",
                 ]
                   .filter((line) => line.length > 0)
                   .join("\n");
@@ -362,14 +337,16 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       getFalcaoDocument: ({ tribunal, documentId }) =>
         Effect.gen(function* () {
-          const result = yield* falcao.getDocument(tribunal, documentId).pipe(
-            Effect.map((doc) => formatFalcaoDocumentDetails(doc)),
-            Effect.catchAll((error) =>
-              Effect.logError("getFalcaoDocument failed", error).pipe(
-                Effect.as(`Error retrieving document: ${error._tag}`)
+          const result = yield* legalResearch
+            .getFalcaoDocument(tribunal, documentId)
+            .pipe(
+              Effect.map((doc) => formatFalcaoDocumentDetails(doc)),
+              Effect.catchAll((error) =>
+                Effect.logError("getFalcaoDocument failed", error).pipe(
+                  Effect.as(`Error retrieving document: ${error._tag}`)
+                )
               )
-            )
-          );
+            );
           return result;
         }).pipe(
           Effect.withSpan("Agent.getFalcaoDocument", {
@@ -392,30 +369,29 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
         processNumber,
       }) =>
         Effect.gen(function* () {
-          const result = yield* falcao
-            .search({
-              texto: query,
-              colecao: documentType ?? "acordaos",
-              size: 10,
+          const result = yield* legalResearch
+            .searchFalcao({
+              query,
+              documentType: documentType ?? "acordaos",
+              tribunals,
+              dateStart,
+              dateEnd,
+              judgeReporter,
+              processNumber,
               page: 0,
-              tribunais: tribunals,
-              dataInicio: dateStart,
-              dataFim: dateEnd,
-              nomeRelator: judgeReporter,
-              numeroProcesso: processNumber,
             })
             .pipe(
               Effect.map((response) => {
-                if (response.documentos.length === 0) {
+                if (response.documents.length === 0) {
                   return `No ${documentType ?? "acordaos"} found for query: "${query}"${tribunals ? ` in tribunals: ${tribunals}` : ""}`;
                 }
 
-                const summary = response.documentos
+                const summary = response.documents
                   .slice(0, 5)
                   .map((doc, idx) => formatFalcaoSearchResult(doc, idx))
                   .join("\n\n");
 
-                return `Found ${response.quantidadeTotal} ${documentType ?? "acordaos"}. Top 5:\n\n${summary}`;
+                return `Found ${response.total} ${documentType ?? "acordaos"}. Top 5:\n\n${summary}`;
               }),
               Effect.catchAll((error) =>
                 Effect.logError("searchFalcaoAdvanced failed", error).pipe(
@@ -437,7 +413,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       getFalcaoTribunals: () =>
         Effect.gen(function* () {
-          const result = yield* falcao.getTribunals().pipe(
+          const result = yield* legalResearch.getFalcaoTribunals().pipe(
             Effect.map((tribunals) => {
               const list = tribunals
                 .map((t) => `- ${t.sigla}: ${t.nome}`)
@@ -460,21 +436,18 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       getFalcaoDocumentCounts: ({ query, tribunals }) =>
         Effect.gen(function* () {
-          const result = yield* falcao
-            .searchCount({
-              texto: query,
-              tribunais: tribunals,
-            })
+          const result = yield* legalResearch
+            .getFalcaoDocumentCounts(query, tribunals)
             .pipe(
               Effect.map((counts) => {
                 const lines = [
                   `Document counts for "${query}"${tribunals ? ` in ${tribunals}` : ""}:`,
                   "",
-                  `- Acórdãos (court decisions): ${counts.countAcordaos}`,
-                  `- Sentenças (sentences): ${counts.countSentencas}`,
-                  `- Precedentes (precedents): ${counts.countPrecedentes}`,
-                  `- Decisões Monocráticas: ${counts.countDecisoesMonocraticas}`,
-                  `- Recurso Revista (appeals): ${counts.countRR}`,
+                  `- Acórdãos (court decisions): ${counts.acordaos}`,
+                  `- Sentenças (sentences): ${counts.sentencas}`,
+                  `- Precedentes (precedents): ${counts.precedentes}`,
+                  `- Decisões Monocráticas: ${counts.decisoesMonocraticas}`,
+                  `- Recurso Revista (appeals): ${counts.recursoRevista}`,
                 ];
                 return lines.join("\n");
               }),
@@ -498,7 +471,7 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       getFalcaoAutocomplete: ({ text }) =>
         Effect.gen(function* () {
-          const result = yield* falcao.autocomplete(text).pipe(
+          const result = yield* legalResearch.getFalcaoAutocomplete(text).pipe(
             Effect.map((response) => {
               const suggestions =
                 response.sugestoes.length > 0
@@ -524,7 +497,9 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
           );
           return result;
         }).pipe(
-          Effect.withSpan("Agent.getFalcaoAutocomplete", { attributes: { text } })
+          Effect.withSpan("Agent.getFalcaoAutocomplete", {
+            attributes: { text },
+          })
         ),
 
       /**
@@ -545,33 +520,33 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
       }) =>
         Effect.gen(function* () {
           // Parse comma-separated strings into arrays
-          const orgaos = courts
+          const courtsArray = courts
             ? courts.split(",").map((c) => c.trim())
             : undefined;
-          const tipos = types
+          const typesArray = types
             ? types.split(",").map((t) => t.trim())
             : undefined;
 
-          const result = yield* bnp
-            .searchPrecedents({
-              buscaGeral: query,
-              todasPalavras: allWords,
-              quaisquerPalavras: anyWords,
-              semPalavras: excludeWords,
-              trechoExato: exactPhrase,
-              orgaos,
-              tipos,
-              cancelados: includeCancelled ?? false,
-              ordenacao: sortBy ?? "Textual",
-              pagina: 1,
+          const result = yield* legalResearch
+            .searchBnp({
+              query,
+              allWords,
+              anyWords,
+              excludeWords,
+              exactPhrase,
+              courts: courtsArray,
+              types: typesArray,
+              includeCancelled: includeCancelled ?? false,
+              sortBy: sortBy ?? "Textual",
+              page: 1,
             })
             .pipe(
               Effect.map((response) => {
-                if (response.resultados.length === 0) {
+                if (response.results.length === 0) {
                   return `No precedents found for query: "${query}"`;
                 }
 
-                const summary = response.resultados
+                const summary = response.results
                   .slice(0, 5)
                   .map((precedent, idx) => {
                     const title = `${precedent.tipo} ${precedent.nr} from ${precedent.orgao}`;
@@ -613,35 +588,13 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
         size,
       }) =>
         Effect.gen(function* () {
-          // Validate tribunal alias
-          if (!isSupportedTribunalAlias(tribunal)) {
-            return `Error: "${tribunal}" is not a valid tribunal alias. Use lowercase codes like 'tjsp', 'tst', 'stj', 'trf1', etc.`;
-          }
-
-          // Build Elasticsearch query
-          const mustClauses: Array<Record<string, unknown>> = [];
-
-          if (processClass !== undefined) {
-            mustClauses.push({ match: { "classe.codigo": processClass } });
-          }
-          if (courtCode !== undefined) {
-            mustClauses.push({ match: { "orgaoJulgador.codigo": courtCode } });
-          }
-          if (dateFrom || dateTo) {
-            const rangeClause: Record<string, string> = {};
-            if (dateFrom) rangeClause.gte = dateFrom;
-            if (dateTo) rangeClause.lte = dateTo;
-            mustClauses.push({ range: { dataAjuizamento: rangeClause } });
-          }
-
-          const query =
-            mustClauses.length > 0
-              ? { bool: { must: mustClauses } }
-              : { match_all: {} };
-
-          const result = yield* datajud
-            .searchProcessMetadata(tribunal as TribunalAlias, {
-              query,
+          const result = yield* legalResearch
+            .searchDatajudAdvanced({
+              tribunal,
+              processClass,
+              courtCode,
+              dateFrom,
+              dateTo,
               size: size ?? 10,
             })
             .pipe(
@@ -692,25 +645,23 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
        */
       parseProcessNumber: ({ processNumber }) =>
         Effect.gen(function* () {
-          const components = yield* parseNumeroProcesso(processNumber);
-          const formatted = formatNumeroProcesso(components);
-          const tribunalAlias = yield* inferTribunalAlias(processNumber);
+          const parsed = yield* legalResearch.parseProcessNumber(processNumber);
 
           const lines = [
             `Process Number Analysis:`,
             ``,
-            `Input: ${processNumber}`,
-            `Formatted: ${formatted}`,
+            `Input: ${parsed.input}`,
+            `Formatted: ${parsed.formatted}`,
             ``,
             `Components:`,
-            `- Sequential: ${components.sequencial}`,
-            `- Check Digit: ${components.dv}`,
-            `- Year: ${components.ano}`,
-            `- Justice Segment: ${components.id_orgao}`,
-            `- Tribunal ID: ${components.id_tribunal}`,
-            `- Origin Unit: ${components.id_unidade_origem}`,
+            `- Sequential: ${parsed.components.sequencial}`,
+            `- Check Digit: ${parsed.components.dv}`,
+            `- Year: ${parsed.components.ano}`,
+            `- Justice Segment: ${parsed.components.idOrgao}`,
+            `- Tribunal ID: ${parsed.components.idTribunal}`,
+            `- Origin Unit: ${parsed.components.idUnidadeOrigem}`,
             ``,
-            `Inferred Tribunal: ${tribunalAlias.toUpperCase()}`,
+            `Inferred Tribunal: ${parsed.tribunalAlias.toUpperCase()}`,
           ];
 
           return lines.join("\n");
@@ -729,8 +680,6 @@ export const LegalToolHandlersLive = LegalToolkit.toLayer(
     };
   })
 ).pipe(
-  // Provide connector service dependencies locally (Local Dependency Erasure pattern)
-  Layer.provide(
-    Layer.mergeAll(BnpServiceLive, DatajudServiceLive, FalcaoServiceLive)
-  )
+  // Provide LegalResearchService (which internally provides connector services)
+  Layer.provide(LegalResearchService.Default)
 );
