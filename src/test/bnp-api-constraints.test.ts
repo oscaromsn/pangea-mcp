@@ -121,15 +121,26 @@ describe("BNP API Constraints - Schema Validation", () => {
 
     console.error("Schema output (no defaults):");
     console.error(`  buscaGeral: "${constructed.buscaGeral ?? ""}"`);
-    console.error(`  cancelados: ${constructed.cancelados} (undefined = not set)`);
-    console.error(`  ordenacao: "${constructed.ordenacao}" (undefined = not set)`);
-    console.error(`  orgaos: ${constructed.orgaos ? `[${constructed.orgaos.join(", ")}]` : "undefined"}`);
+    console.error(
+      `  cancelados: ${constructed.cancelados} (undefined = not set)`
+    );
+    console.error(
+      `  ordenacao: "${constructed.ordenacao}" (undefined = not set)`
+    );
+    console.error(
+      `  orgaos: ${constructed.orgaos ? `[${constructed.orgaos.join(", ")}]` : "undefined"}`
+    );
     console.error(`  pagina: ${constructed.pagina ?? "undefined"}`);
-    console.error(`  tipos: ${constructed.tipos ? `[${constructed.tipos.join(", ")}]` : "undefined"}`);
+    console.error(
+      `  tipos: ${constructed.tipos ? `[${constructed.tipos.join(", ")}]` : "undefined"}`
+    );
 
     // Schema accepts optional fields without defaults
     assert.strictEqual(constructed.buscaGeral, "test");
-    assert.isUndefined(constructed.cancelados, "Schema does not apply defaults");
+    assert.isUndefined(
+      constructed.cancelados,
+      "Schema does not apply defaults"
+    );
     assert.isUndefined(constructed.ordenacao, "Schema does not apply defaults");
     assert.isUndefined(constructed.orgaos, "Schema does not apply defaults");
     assert.isUndefined(constructed.pagina, "Schema does not apply defaults");
@@ -142,7 +153,9 @@ describe("BNP API Constraints - Schema Validation", () => {
     console.error("  pagina: 1");
     console.error("  tipos: []");
 
-    console.error("\n✅ Architecture documented: Schema validates, Service applies defaults");
+    console.error(
+      "\n✅ Architecture documented: Schema validates, Service applies defaults"
+    );
   });
 });
 

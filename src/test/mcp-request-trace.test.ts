@@ -178,7 +178,10 @@ describe("MCP Request Trace - Field Analysis", () => {
 
     // With the new architecture, schema only includes provided fields
     // Defaults are applied in service layer before validation
-    assert.isTrue("buscaGeral" in validated, "Provided field should be present");
+    assert.isTrue(
+      "buscaGeral" in validated,
+      "Provided field should be present"
+    );
     assert.strictEqual(validated.buscaGeral, "test");
 
     // Verify schema does NOT inject unexpected fields
@@ -195,7 +198,9 @@ describe("MCP Request Trace - Field Analysis", () => {
       "trechoExato",
     ];
 
-    const unexpectedFields = fields.filter((f) => !knownSchemaFields.includes(f));
+    const unexpectedFields = fields.filter(
+      (f) => !knownSchemaFields.includes(f)
+    );
     if (unexpectedFields.length > 0) {
       console.error("\n❌ UNEXPECTED FIELDS FOUND:");
       unexpectedFields.forEach((field) => {
@@ -208,7 +213,9 @@ describe("MCP Request Trace - Field Analysis", () => {
 
     console.error("\n📋 Architecture note:");
     console.error("   Schema validates structure only.");
-    console.error("   Defaults (cancelados, ordenacao, pagina) applied in BnpService.");
+    console.error(
+      "   Defaults (cancelados, ordenacao, pagina) applied in BnpService."
+    );
     console.error("\n✅ Schema output valid");
   });
 });
